@@ -32,6 +32,18 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+    - name: Set environment variables
+        run: |
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
+          echo "DB_USER=${{ secrets.DB_USER }}" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "SERVER_HOST=${{ secrets.SERVER_HOST }}" >> $GITHUB_ENV
+          echo "SERVER_PORT_DEV=${{ secrets.SERVER_PORT_DEV }}" >> $GITHUB_ENV
+          echo "SERVER_PORT_TEST=${{ secrets.SERVER_PORT_TEST }}" >> $GITHUB_ENV
+          echo "SERVER_PORT_PROD=${{ secrets.SERVER_PORT_PROD }}" >> $GITHUB_ENV
+          
     - name: Build with Maven
       run: mvn -B package -DskipTests
 
@@ -54,6 +66,14 @@ jobs:
 
       - name: Deploy to Production
         run: echo "Deploying to production..."
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT_PROD: ${{ secrets.SERVER_PORT_PROD }}
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
       - name: Update dependency graph
