@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+openapi:
+  service:
+    api-docs: tasko-api
+    server: http://${SERVER_HOST}:${SERVER_PORT_PROD}
+    title: Tasko API
+    version: 1.0.0
+
+
