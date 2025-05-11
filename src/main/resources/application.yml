@@ -6,7 +6,7 @@ spring:
   application:
     name: tasko-server
   profiles:
-    active: @spring.profiles.active@
+    active: dev
   jpa:
     open-in-view: false
     properties:
