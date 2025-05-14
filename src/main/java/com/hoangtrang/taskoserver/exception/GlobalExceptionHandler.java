@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
@@ -38,8 +39,20 @@ public class GlobalExceptionHandler {
         errorResponse.setError(HttpStatus.BAD_REQUEST.getReasonPhrase());
         errorResponse.setMessage(errorStatus.getMessage());
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errorResponse, errorStatus.getStatusCode());
     }
+
+    @ExceptionHandler(value= AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+        ErrorStatus errorStatus = ErrorStatus.UNAUTHORIZED;
+        return ResponseEntity.status(errorStatus.getStatusCode()).body(
+                ErrorResponse.builder()
+                        .status(errorStatus.getStatus())
+                        .message(errorStatus.getMessage())
+                        .build()
+        );
+    }
+
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
