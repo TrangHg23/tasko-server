@@ -1,12 +1,18 @@
 package com.hoangtrang.taskoserver.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class ResponseData<T> {
-    private final int status;
+    @Builder.Default
+    private int status = 1000;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private final String message;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
 
