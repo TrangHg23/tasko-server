@@ -25,7 +25,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -89,11 +88,8 @@ public class AuthServiceImpl implements AuthService {
 
         TokenResponse tokenResponse = generateToken(user.getEmail());
 
-        UserInfo userInfo = UserInfo.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .name(user.getName())
-                .build();
+        UserInfo userInfo = userMapper.toUserInfo(user);
+
         return LoginResponse.builder()
                 .authenticated(true)
                 .accessToken(tokenResponse.getToken())
