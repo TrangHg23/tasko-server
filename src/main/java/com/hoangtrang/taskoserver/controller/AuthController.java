@@ -2,6 +2,7 @@ package com.hoangtrang.taskoserver.controller;
 
 import com.hoangtrang.taskoserver.dto.request.IntrospectRequest;
 import com.hoangtrang.taskoserver.dto.request.LoginRequest;
+import com.hoangtrang.taskoserver.dto.request.LogoutRequest;
 import com.hoangtrang.taskoserver.dto.request.RegisterRequest;
 import com.hoangtrang.taskoserver.dto.response.IntrospectResponse;
 import com.hoangtrang.taskoserver.dto.response.LoginResponse;
@@ -57,6 +58,13 @@ public class AuthController {
         return ResponseData.<IntrospectResponse>builder()
                 .data(result)
                 .build();
+    }
+
+    @Operation(summary = "Log out the user", description = "Terminates the user's session and invalidates the authentication token.")
+    @PostMapping("/log-out")
+    public ResponseData<Void> logout(@Valid @RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        authService.logout(request);
+        return new ResponseData<>(HttpStatus.OK.value(), "User logout successfully");
     }
 
 }
