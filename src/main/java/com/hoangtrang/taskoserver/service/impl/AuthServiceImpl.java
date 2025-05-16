@@ -2,12 +2,15 @@ package com.hoangtrang.taskoserver.service.impl;
 
 import com.hoangtrang.taskoserver.dto.request.IntrospectRequest;
 import com.hoangtrang.taskoserver.dto.request.LoginRequest;
+import com.hoangtrang.taskoserver.dto.request.LogoutRequest;
 import com.hoangtrang.taskoserver.dto.request.RegisterRequest;
 import com.hoangtrang.taskoserver.dto.response.*;
 import com.hoangtrang.taskoserver.exception.AppException;
 import com.hoangtrang.taskoserver.exception.ErrorStatus;
 import com.hoangtrang.taskoserver.mapper.UserMapper;
+import com.hoangtrang.taskoserver.model.InvalidatedToken;
 import com.hoangtrang.taskoserver.model.User;
+import com.hoangtrang.taskoserver.repository.InvalidatedTokenRepository;
 import com.hoangtrang.taskoserver.repository.UserRepository;
 import com.hoangtrang.taskoserver.service.AuthService;
 import com.nimbusds.jose.*;
@@ -29,6 +32,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +45,8 @@ public class AuthServiceImpl implements AuthService {
     PasswordEncoder passwordEncoder;
 
     UserMapper userMapper;
+
+    InvalidatedTokenRepository invalidatedTokenRepository;
 
     @NonFinal
     @Value("${spring.security.jwt.secret-key}")
@@ -63,17 +69,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
         var token = request.getToken();
-
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-
-        Date expireTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        var verified = signedJWT.verify(verifier);
+        boolean isValid = true;
+        try {
+            verifyToken(token);
+        } catch (AppException e) {
+            isValid = false;
+        }
 
         return IntrospectResponse.builder()
-                .valid(verified && expireTime.after(new Date()))
+                .valid(isValid)
                 .build();
     }
 
@@ -109,6 +113,7 @@ public class AuthServiceImpl implements AuthService {
                 .subject(email)
                 .issuer("hoangtrang.com")
                 .issueTime(new Date())
+                .jwtID(UUID.randomUUID().toString())
                 .expirationTime(new Date(expirationTime.toEpochMilli()))
                 .build();
 
@@ -123,5 +128,38 @@ public class AuthServiceImpl implements AuthService {
             log.error("Cannot create token", e);
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        var signToken = verifyToken(request.getToken());
+
+        String jit = signToken.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expiryTime)
+                .build();
+        invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expireTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+
+        if(!(verified && expireTime.after(new Date())))
+            throw new AppException(ErrorStatus.UNAUTHENTICATED);
+
+        if(invalidatedTokenRepository
+                .existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(ErrorStatus.UNAUTHENTICATED);
+
+        return signedJWT;
     }
 }
