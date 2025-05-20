@@ -1,15 +1,13 @@
 package com.hoangtrang.taskoserver.service.impl;
 
-import com.hoangtrang.taskoserver.dto.request.IntrospectRequest;
-import com.hoangtrang.taskoserver.dto.request.LoginRequest;
-import com.hoangtrang.taskoserver.dto.request.LogoutRequest;
-import com.hoangtrang.taskoserver.dto.request.RegisterRequest;
+import com.hoangtrang.taskoserver.dto.request.*;
 import com.hoangtrang.taskoserver.dto.response.*;
 import com.hoangtrang.taskoserver.exception.AppException;
 import com.hoangtrang.taskoserver.exception.ErrorStatus;
 import com.hoangtrang.taskoserver.mapper.UserMapper;
 import com.hoangtrang.taskoserver.model.InvalidatedToken;
 import com.hoangtrang.taskoserver.model.User;
+import com.hoangtrang.taskoserver.model.enums.TokenType;
 import com.hoangtrang.taskoserver.repository.InvalidatedTokenRepository;
 import com.hoangtrang.taskoserver.repository.UserRepository;
 import com.hoangtrang.taskoserver.service.AuthService;
@@ -67,12 +65,12 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
-        var token = request.getToken();
+    public IntrospectResponse introspect(IntrospectRequest request) {
+        var token = request.getAccessToken();
         boolean isValid = true;
         try {
-            verifyToken(token);
-        } catch (AppException e) {
+            verifyToken(token, TokenType.ACCESS);
+        } catch (AppException | JOSEException | ParseException e) {
             isValid = false;
         }
 
@@ -90,35 +88,36 @@ public class AuthServiceImpl implements AuthService {
         if(!authenticated)
             throw new AppException(ErrorStatus.UNAUTHENTICATED);
 
-        TokenResponse tokenResponse = generateToken(user.getEmail());
+        var accessTokenResponse = generateToken(user, TokenType.ACCESS);
+        var refreshTokenResponse = generateToken(user, TokenType.REFRESH);
 
         UserInfo userInfo = userMapper.toUserInfo(user);
 
         return LoginResponse.builder()
                 .authenticated(true)
-                .accessToken(tokenResponse.getToken())
+                .accessToken(accessTokenResponse.getToken())
+                .refreshToken(refreshTokenResponse.getToken())
                 .tokenType("Bearer")
-                .expiresAt(tokenResponse.getExpiresAt())
+                .expiresAt(accessTokenResponse.getExpiresAt())
                 .user(userInfo)
                 .build();
-
     }
 
-    private TokenResponse generateToken(String email) {
+    private TokenResponse generateToken(User user, TokenType tokenType) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
-        Instant expirationTime = Instant.now().plus(1, ChronoUnit.HOURS);
+        Instant expirationTime = Instant.now().plus(tokenType.getHoursToExpire(), ChronoUnit.HOURS);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(email)
+                .subject(user.getEmail())
                 .issuer("hoangtrang.com")
                 .issueTime(new Date())
                 .jwtID(UUID.randomUUID().toString())
                 .expirationTime(new Date(expirationTime.toEpochMilli()))
+                .claim("token_type", tokenType.name())
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-
         JWSObject jwsObject = new JWSObject(header, payload);
 
         try {
@@ -131,35 +130,88 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logout(LogoutRequest request) throws ParseException, JOSEException {
-        var signToken = verifyToken(request.getToken());
+    public void logout(LogoutRequest request) {
+        try {
+            invalidateToken(request.getAccessToken(), TokenType.ACCESS);
+            if(request.getRefreshToken() != null) {
+                invalidateToken(request.getRefreshToken(), TokenType.REFRESH);
+            }
+            log.info("Logout successful for user.");
+        } catch (AppException | JOSEException | ParseException e) {
+            log.error("Logout failed: invalid token", e);
+            throw new AppException(ErrorStatus.UNAUTHENTICATED);
+        }
+    }
 
-        String jit = signToken.getJWTClaimsSet().getJWTID();
-        Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+    private void invalidateToken(String token, TokenType tokenType) throws JOSEException, ParseException {
+        SignedJWT signedJWT = SignedJWT.parse(token);
+        String jti = signedJWT.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jit)
+                .id(jti)
                 .expiryTime(expiryTime)
                 .build();
         invalidatedTokenRepository.save(invalidatedToken);
+
+        log.info("{} token with jti={} invalidated successfully", tokenType.name(), jti);
     }
 
-    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
+    private SignedJWT verifyToken(String token, TokenType expectedType) throws JOSEException, ParseException {
         SignedJWT signedJWT = SignedJWT.parse(token);
+        JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
 
-        Date expireTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        var verified = signedJWT.verify(verifier);
-
-        if(!(verified && expireTime.after(new Date())))
+        // Xác thực signed key
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+        boolean verified = signedJWT.verify(verifier);
+        if (!verified) {
             throw new AppException(ErrorStatus.UNAUTHENTICATED);
+        }
 
-        if(invalidatedTokenRepository
-                .existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+        // Kiểm tra thời gian hết hạn (thêm khoảng leeway 30 giây)
+        Date expirationTime = claims.getExpirationTime();
+        if (expirationTime == null || expirationTime.before(new Date(System.currentTimeMillis() - 30000))) {
+            throw new AppException(
+                    expectedType == TokenType.ACCESS ? ErrorStatus.ACCESS_TOKEN_EXPIRED : ErrorStatus.REFRESH_TOKEN_EXPIRED
+            );
+        }
+
+
+        String tokenType = claims.getStringClaim("token_type");
+        if (tokenType == null || !tokenType.equals(expectedType.name())) {
             throw new AppException(ErrorStatus.UNAUTHENTICATED);
+        }
+
+        if (invalidatedTokenRepository.existsById(claims.getJWTID())) {
+            throw new AppException(ErrorStatus.ACCESS_TOKEN_EXPIRED);
+        }
 
         return signedJWT;
     }
+
+    private User validateRefreshToken(String refreshToken) {
+        try {
+            SignedJWT signedJWT = verifyToken(refreshToken, TokenType.REFRESH);
+            String email = signedJWT.getJWTClaimsSet().getSubject();
+            return userRepository.findByEmail(email)
+                    .orElseThrow(() -> new AppException(ErrorStatus.USER_NOT_EXISTED));
+        } catch (Exception e) {
+            throw new AppException(ErrorStatus.UNAUTHENTICATED);
+        }
+    }
+
+    @Override
+    public RefreshResponse refreshAccessToken(String refreshToken) {
+        var user = validateRefreshToken(refreshToken);
+
+        TokenResponse newAccessToken = generateToken(user, TokenType.ACCESS);
+
+        return RefreshResponse.builder()
+                .authenticated(true)
+                .accessToken(newAccessToken.getToken())
+                .tokenType("Bearer")
+                .expiresAt(newAccessToken.getExpiresAt())
+                .build();
+    }
+
 }

@@ -1,11 +1,9 @@
 package com.hoangtrang.taskoserver.service;
 
-import com.hoangtrang.taskoserver.dto.request.IntrospectRequest;
-import com.hoangtrang.taskoserver.dto.request.LoginRequest;
-import com.hoangtrang.taskoserver.dto.request.LogoutRequest;
-import com.hoangtrang.taskoserver.dto.request.RegisterRequest;
+import com.hoangtrang.taskoserver.dto.request.*;
 import com.hoangtrang.taskoserver.dto.response.IntrospectResponse;
 import com.hoangtrang.taskoserver.dto.response.LoginResponse;
+import com.hoangtrang.taskoserver.dto.response.RefreshResponse;
 import com.hoangtrang.taskoserver.dto.response.RegisterResponse;
 import com.nimbusds.jose.JOSEException;
 
@@ -16,8 +14,9 @@ public interface AuthService {
 
     LoginResponse authenticate(LoginRequest request);
 
-    IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException;
+    IntrospectResponse introspect(IntrospectRequest request);
 
     void logout(LogoutRequest request) throws ParseException, JOSEException;
 
+    RefreshResponse refreshAccessToken(String refreshToken);
 }

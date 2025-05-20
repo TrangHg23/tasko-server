@@ -1,13 +1,7 @@
 package com.hoangtrang.taskoserver.controller;
 
-import com.hoangtrang.taskoserver.dto.request.IntrospectRequest;
-import com.hoangtrang.taskoserver.dto.request.LoginRequest;
-import com.hoangtrang.taskoserver.dto.request.LogoutRequest;
-import com.hoangtrang.taskoserver.dto.request.RegisterRequest;
-import com.hoangtrang.taskoserver.dto.response.IntrospectResponse;
-import com.hoangtrang.taskoserver.dto.response.LoginResponse;
-import com.hoangtrang.taskoserver.dto.response.RegisterResponse;
-import com.hoangtrang.taskoserver.dto.response.ResponseData;
+import com.hoangtrang.taskoserver.dto.request.*;
+import com.hoangtrang.taskoserver.dto.response.*;
 import com.hoangtrang.taskoserver.service.AuthService;
 import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,9 +45,9 @@ public class AuthController {
                 .build();
     }
 
-    @Operation(summary = "Check token validity", description = "Check a token whether it is valid.")
+    @Operation(summary = "Check access token validity", description = "Check an access token whether it is valid.")
     @PostMapping("/introspect")
-    public ResponseData<IntrospectResponse> introspect(@Valid @RequestBody IntrospectRequest request) throws ParseException, JOSEException {
+    public ResponseData<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
         var result = authService.introspect(request);
         return ResponseData.<IntrospectResponse>builder()
                 .data(result)
@@ -62,9 +56,16 @@ public class AuthController {
 
     @Operation(summary = "Log out the user", description = "Terminates the user's session and invalidates the authentication token.")
     @PostMapping("/log-out")
-    public ResponseData<Void> logout(@Valid @RequestBody LogoutRequest request) throws ParseException, JOSEException {
+    public ResponseData<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authService.logout(request);
         return new ResponseData<>(HttpStatus.OK.value(), "User logout successfully");
     }
 
+    @Operation(summary= "Refresh token", description = "Generates a new access token using a valid refresh token.")
+    @PostMapping("/refresh")
+    public ResponseData<RefreshResponse> refreshToken(@RequestBody RefreshRequest request) {
+        var result = authService.refreshAccessToken(request.getRefreshToken());
+        return ResponseData.<RefreshResponse>builder()
+                .data(result).build();
+    }
 }
