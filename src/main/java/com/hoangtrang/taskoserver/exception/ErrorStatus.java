@@ -16,8 +16,10 @@ public enum ErrorStatus {
     PASSWORD_REQUIRED(1005, "Password is required", HttpStatus.BAD_REQUEST),
     PASSWORD_INVALID(1006, "Password must be at least 8 characters", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1007, "User doesn't exist", HttpStatus.NOT_FOUND),
-    UNAUTHENTICATED(1008, "Unauthenticated", HttpStatus.UNAUTHORIZED),
-    UNAUTHORIZED(1009, "You do not have permission", HttpStatus.FORBIDDEN)
+    UNAUTHENTICATED(1100, "Unauthenticated", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED(1101, "You do not have permission", HttpStatus.FORBIDDEN),
+    ACCESS_TOKEN_EXPIRED(1102, "Access token expired", HttpStatus.UNAUTHORIZED),
+    REFRESH_TOKEN_EXPIRED(1103, "Refresh token expired, please login again", HttpStatus.UNAUTHORIZED),
     ;
     private final int status;
     private final String message;
