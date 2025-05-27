@@ -5,6 +5,8 @@ import com.hoangtrang.taskoserver.dto.response.*;
 import com.hoangtrang.taskoserver.service.AuthService;
 import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -29,6 +31,12 @@ public class AuthController {
 
     AuthService authService;
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", ref = "badRequest"),
+            @ApiResponse(responseCode = "401", ref = "unauthorized"),
+            @ApiResponse(responseCode = "404", ref = "notFound"),
+            @ApiResponse(responseCode = "500", ref = "internalServerError")
+    })
     @Operation(summary = "Register new account", description = "Creates a new user account using email and password.")
     @PostMapping("/sign-up")
     public ResponseData<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -36,6 +44,12 @@ public class AuthController {
         return new ResponseData<>(HttpStatus.CREATED.value(), "User registered successfully", response);
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", ref = "badRequest"),
+            @ApiResponse(responseCode = "401", ref = "unauthorized"),
+            @ApiResponse(responseCode = "404", ref = "notFound"),
+            @ApiResponse(responseCode = "500", ref = "internalServerError")
+    })
     @Operation(summary= "User login", description = "Authenticate user using email and password.")
     @PostMapping("/log-in")
     public ResponseData<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -54,6 +68,12 @@ public class AuthController {
                 .build();
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", ref = "badRequest"),
+            @ApiResponse(responseCode = "401", ref = "unauthorized"),
+            @ApiResponse(responseCode = "404", ref = "notFound"),
+            @ApiResponse(responseCode = "500", ref = "internalServerError")
+    })
     @Operation(summary = "Log out the user", description = "Terminates the user's session and invalidates the authentication token.")
     @PostMapping("/log-out")
     public ResponseData<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {

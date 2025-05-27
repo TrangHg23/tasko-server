@@ -1,12 +1,11 @@
 package com.hoangtrang.taskoserver.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum ErrorStatus {
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_KEY(1001, "Uncategorized error", HttpStatus.BAD_REQUEST ),
@@ -23,6 +22,6 @@ public enum ErrorStatus {
     ;
     private final int status;
     private final String message;
-    private final HttpStatusCode statusCode;
+    private final HttpStatus statusCode;
 
 }

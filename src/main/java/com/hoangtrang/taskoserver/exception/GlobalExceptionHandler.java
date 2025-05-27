@@ -14,50 +14,51 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(value = Exception.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleRunTimeException(RuntimeException e, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse();
-
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(ErrorStatus.UNCATEGORIZED_EXCEPTION.getStatus());
-        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
-        errorResponse.setError(HttpStatus.BAD_REQUEST.getReasonPhrase());
-        errorResponse.setMessage(ErrorStatus.UNCATEGORIZED_EXCEPTION.getMessage());
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
 
     @ExceptionHandler(value = AppException.class)
-    public ResponseEntity<ErrorResponse> handleRunTimeException(AppException e, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse();
-        ErrorStatus errorStatus = e.getErrorStatus();
+    public ResponseEntity<ErrorResponse> handleAppException(AppException e, WebRequest request) {
+            ErrorStatus errorStatus = e.getErrorStatus();
+            ErrorResponse errorResponse = ErrorResponse.builder()
+                    .timestamp(LocalDateTime.now())
+                    .status(errorStatus.getStatus())
+                    .error(errorStatus.getStatusCode().toString())
+                    .message(errorStatus.getMessage())
+                    .path(request.getDescription(false).replace("uri=", ""))
+                    .build();
 
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(errorStatus.getStatus());
-        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
-        errorResponse.setError(HttpStatus.BAD_REQUEST.getReasonPhrase());
-        errorResponse.setMessage(errorStatus.getMessage());
+            return ResponseEntity.status(errorStatus.getStatusCode()).body(errorResponse);
+    }
 
-        return new ResponseEntity<>(errorResponse, errorStatus.getStatusCode());
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleOtherExceptions(Exception e, WebRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message("Unexpected error occurred")
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     @ExceptionHandler(value= AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e, WebRequest request) {
         ErrorStatus errorStatus = ErrorStatus.UNAUTHORIZED;
-        return ResponseEntity.status(errorStatus.getStatusCode()).body(
-                ErrorResponse.builder()
-                        .status(errorStatus.getStatus())
-                        .message(errorStatus.getMessage())
-                        .build()
-        );
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(errorStatus.getStatus())
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .message(errorStatus.getMessage())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e, WebRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse();
 
         ErrorStatus errorStatus = ErrorStatus.INVALID_KEY;
         FieldError fieldError = e.getFieldError();
@@ -72,11 +73,13 @@ public class GlobalExceptionHandler {
                 }
             }
         }
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(errorStatus.getStatus());
-        errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
-        errorResponse.setError(HttpStatus.BAD_REQUEST.getReasonPhrase());
-        errorResponse.setMessage(errorStatus.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(errorStatus.getStatus())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(errorStatus.getMessage())
+                .build();
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

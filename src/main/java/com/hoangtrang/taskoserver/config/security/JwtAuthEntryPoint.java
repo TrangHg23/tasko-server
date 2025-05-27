@@ -1,9 +1,8 @@
-package com.hoangtrang.taskoserver.config;
+package com.hoangtrang.taskoserver.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hoangtrang.taskoserver.exception.ErrorResponse;
 import com.hoangtrang.taskoserver.exception.ErrorStatus;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
@@ -15,7 +14,7 @@ import java.io.IOException;
 public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
 
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         ErrorStatus errorStatus = ErrorStatus.UNAUTHENTICATED;
 
         response.setStatus(errorStatus.getStatusCode().value());
