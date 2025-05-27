@@ -1,4 +1,4 @@
-package com.hoangtrang.taskoserver.config;
+package com.hoangtrang.taskoserver.config.cors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

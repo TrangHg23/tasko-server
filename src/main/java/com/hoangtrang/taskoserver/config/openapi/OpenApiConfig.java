@@ -1,8 +1,12 @@
-package com.hoangtrang.taskoserver.config;
+package com.hoangtrang.taskoserver.config.openapi;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -32,7 +36,12 @@ public class OpenApiConfig {
                                         new SecurityScheme()
                                                 .type(SecurityScheme.Type.HTTP)
                                                 .scheme("bearer")
-                                                .bearerFormat("JWT")))
+                                                .bearerFormat("JWT"))
+                                .addResponses("badRequest", createResponse("Bad Request"))
+                                .addResponses("unauthorized", createResponse("Unauthorized"))
+                                .addResponses("notFound", createResponse("Not Found"))
+                                .addResponses("internalServerError", createResponse("Internal Server Error"))
+                )
                 .security(List.of(new SecurityRequirement().addList("bearerAuth")));
     }
 
@@ -42,5 +51,12 @@ public class OpenApiConfig {
                 .packagesToScan("com.hoangtrang.taskoserver.controller")
                 .build();
 
+    }
+
+    private ApiResponse createResponse(String description) {
+        return new ApiResponse()
+                .description(description)
+                .content(new Content().addMediaType("application/json",
+                        new MediaType().schema(new Schema<>().$ref("#/components/schemas/ErrorResponse"))));
     }
 }
