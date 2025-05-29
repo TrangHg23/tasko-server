@@ -16,6 +16,9 @@ public enum ErrorStatus {
     PASSWORD_INVALID(1006, "Password must be at least 8 characters", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1007, "User doesn't exist", HttpStatus.NOT_FOUND),
     UNAUTHENTICATED(1100, "Unauthenticated", HttpStatus.UNAUTHORIZED),
+    CATEGORY_EXISTED(1008, "Category already existed", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_FOUND(1009, "Category doesn't exist", HttpStatus.NOT_FOUND),
+
     UNAUTHORIZED(1101, "You do not have permission", HttpStatus.FORBIDDEN),
     ACCESS_TOKEN_EXPIRED(1102, "Access token expired", HttpStatus.UNAUTHORIZED),
     REFRESH_TOKEN_EXPIRED(1103, "Refresh token expired, please login again", HttpStatus.UNAUTHORIZED),

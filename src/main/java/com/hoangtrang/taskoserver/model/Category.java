@@ -1,28 +1,27 @@
 package com.hoangtrang.taskoserver.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Setter
-@Getter
 @Entity
-@Table(name="users")
-public class User {
+@Getter
+@Setter
+@Table(name = "categories")
+public class Category {
     @Id
     @GeneratedValue(generator = "UUID")
-    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "uuid")
+    @Column(name="id", nullable = false)
     private UUID id;
 
-    @Column(name="email", unique = true, nullable = false)
-    private String email;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="user_id", nullable = false)
+    private User user;
 
-    @Column(name="password", nullable = false)
-    private String password;
-
-    @Column(name="name")
+    @Column(name="name", nullable = false, length = 100)
     private String name;
 
     @Column(name="created_at", updatable = false)
@@ -32,6 +31,4 @@ public class User {
     protected void onCreate() {
         createdAt = OffsetDateTime.now();
     }
-
-
 }
