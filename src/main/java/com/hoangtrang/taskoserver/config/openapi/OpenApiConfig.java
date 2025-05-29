@@ -3,13 +3,12 @@ package com.hoangtrang.taskoserver.config.openapi;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -37,10 +36,6 @@ public class OpenApiConfig {
                                                 .type(SecurityScheme.Type.HTTP)
                                                 .scheme("bearer")
                                                 .bearerFormat("JWT"))
-                                .addResponses("badRequest", createResponse("Bad Request"))
-                                .addResponses("unauthorized", createResponse("Unauthorized"))
-                                .addResponses("notFound", createResponse("Not Found"))
-                                .addResponses("internalServerError", createResponse("Internal Server Error"))
                 )
                 .security(List.of(new SecurityRequirement().addList("bearerAuth")));
     }
@@ -53,10 +48,33 @@ public class OpenApiConfig {
 
     }
 
-    private ApiResponse createResponse(String description) {
-        return new ApiResponse()
-                .description(description)
-                .content(new Content().addMediaType("application/json",
-                        new MediaType().schema(new Schema<>().$ref("#/components/schemas/ErrorResponse"))));
+
+    @Bean
+    public OpenApiCustomizer globalResponseCustomizer() {
+        return openApi -> {
+            openApi.getPaths().values().forEach(pathItem -> {
+                pathItem.readOperations().forEach(operation -> {
+                    ApiResponses responses = operation.getResponses();
+
+                    if (!responses.containsKey("400")) {
+                        responses.addApiResponse("400", createErrorResponse("Bad Request"));
+                    }
+                    if (!responses.containsKey("401")) {
+                        responses.addApiResponse("401", createErrorResponse("Unauthorized"));
+                    }
+                    if (!responses.containsKey("404")) {
+                        responses.addApiResponse("404", createErrorResponse("Not Found"));
+                    }
+                    if (!responses.containsKey("500")) {
+                        responses.addApiResponse("500", createErrorResponse("Internal Server Error"));
+                    }
+                });
+            });
+        };
     }
+
+    private ApiResponse createErrorResponse(String description) {
+        return new ApiResponse().description(description);
+    }
+
 }
