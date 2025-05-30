@@ -1,11 +1,9 @@
-package com.hoangtrang.taskoserver.dto.response;
+package com.hoangtrang.taskoserver.dto.auth;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-
-import java.time.Instant;
 
 @Getter
 @AllArgsConstructor

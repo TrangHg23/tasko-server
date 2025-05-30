@@ -1,8 +1,9 @@
 package com.hoangtrang.taskoserver.service.impl;
 
 import com.hoangtrang.taskoserver.config.security.JwtProvider;
-import com.hoangtrang.taskoserver.dto.request.*;
-import com.hoangtrang.taskoserver.dto.response.*;
+import com.hoangtrang.taskoserver.dto.auth.*;
+import com.hoangtrang.taskoserver.dto.auth.IntrospectRequest;
+import com.hoangtrang.taskoserver.dto.auth.IntrospectResponse;
 import com.hoangtrang.taskoserver.exception.AppException;
 import com.hoangtrang.taskoserver.exception.ErrorStatus;
 import com.hoangtrang.taskoserver.mapper.UserMapper;
@@ -31,11 +32,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.email())) {
             throw new AppException(ErrorStatus.EMAIL_EXISTED);
         }
         User user = userMapper.toUser(request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.password()));
         user.setCreatedAt(OffsetDateTime.now());
 
         userRepository.save(user);
@@ -44,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public IntrospectResponse introspect(IntrospectRequest request) {
-        boolean isValid = jwtProvider.isTokenValid(request.getAccessToken(), TokenType.ACCESS);
+        boolean isValid = jwtProvider.isTokenValid(request.accessToken(), TokenType.ACCESS);
 
         return IntrospectResponse.builder()
                 .valid(isValid)
@@ -53,9 +54,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse authenticate(LoginRequest request) {
-        var user = userRepository.findByEmail(request.getEmail())
+        var user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AppException(ErrorStatus.USER_NOT_EXISTED));
-        boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        boolean authenticated = passwordEncoder.matches(request.password(), user.getPassword());
 
         if(!authenticated)
             throw new AppException(ErrorStatus.UNAUTHENTICATED);
@@ -77,10 +78,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(LogoutRequest request) {
-        jwtProvider.invalidateToken(request.getAccessToken(), TokenType.ACCESS);
+        jwtProvider.invalidateToken(request.accessToken(), TokenType.ACCESS);
 
-        if (request.getRefreshToken() != null) {
-            jwtProvider.invalidateToken(request.getRefreshToken(), TokenType.REFRESH);
+        if (request.refreshToken() != null) {
+            jwtProvider.invalidateToken(request.refreshToken(), TokenType.REFRESH);
         }
 
         log.info("Logout successful.");

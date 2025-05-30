@@ -1,7 +1,7 @@
 package com.hoangtrang.taskoserver.service;
 
-import com.hoangtrang.taskoserver.dto.request.CategoryRequest;
-import com.hoangtrang.taskoserver.dto.response.CategoryResponse;
+import com.hoangtrang.taskoserver.dto.category.CategoryRequest;
+import com.hoangtrang.taskoserver.dto.category.CategoryResponse;
 import com.hoangtrang.taskoserver.model.User;
 
 import java.util.List;

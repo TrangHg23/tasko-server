@@ -1,8 +1,8 @@
 package com.hoangtrang.taskoserver.mapper;
 
-import com.hoangtrang.taskoserver.dto.request.RegisterRequest;
-import com.hoangtrang.taskoserver.dto.response.RegisterResponse;
-import com.hoangtrang.taskoserver.dto.response.UserInfo;
+import com.hoangtrang.taskoserver.dto.auth.RegisterRequest;
+import com.hoangtrang.taskoserver.dto.auth.RegisterResponse;
+import com.hoangtrang.taskoserver.dto.auth.UserInfo;
 import com.hoangtrang.taskoserver.model.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

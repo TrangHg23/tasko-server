@@ -1,9 +1,9 @@
 package com.hoangtrang.taskoserver.controller;
 
 import com.hoangtrang.taskoserver.config.security.CustomUserDetails;
-import com.hoangtrang.taskoserver.dto.request.CategoryRequest;
-import com.hoangtrang.taskoserver.dto.response.CategoryResponse;
-import com.hoangtrang.taskoserver.dto.response.ResponseData;
+import com.hoangtrang.taskoserver.dto.category.CategoryRequest;
+import com.hoangtrang.taskoserver.dto.category.CategoryResponse;
+import com.hoangtrang.taskoserver.dto.common.ResponseData;
 import com.hoangtrang.taskoserver.model.User;
 import com.hoangtrang.taskoserver.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;

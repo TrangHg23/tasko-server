@@ -1,6 +1,6 @@
 package com.hoangtrang.taskoserver.config.security;
 
-import com.hoangtrang.taskoserver.dto.response.TokenResponse;
+import com.hoangtrang.taskoserver.dto.auth.TokenResponse;
 import com.hoangtrang.taskoserver.exception.AppException;
 import com.hoangtrang.taskoserver.exception.ErrorStatus;
 import com.hoangtrang.taskoserver.model.InvalidatedToken;
