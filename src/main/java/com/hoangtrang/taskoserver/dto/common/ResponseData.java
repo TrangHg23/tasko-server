@@ -1,4 +1,4 @@
-package com.hoangtrang.taskoserver.dto.response;
+package com.hoangtrang.taskoserver.dto.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

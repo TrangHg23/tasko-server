@@ -1,4 +1,4 @@
-package com.hoangtrang.taskoserver.dto.response;
+package com.hoangtrang.taskoserver.dto.category;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

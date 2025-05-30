@@ -1,7 +1,10 @@
 package com.hoangtrang.taskoserver.controller;
 
-import com.hoangtrang.taskoserver.dto.request.*;
-import com.hoangtrang.taskoserver.dto.response.*;
+import com.hoangtrang.taskoserver.dto.auth.*;
+import com.hoangtrang.taskoserver.dto.common.ResponseData;
+import com.hoangtrang.taskoserver.dto.auth.IntrospectRequest;
+import com.hoangtrang.taskoserver.dto.auth.IntrospectResponse;
+import com.hoangtrang.taskoserver.dto.auth.LoginRequest;
 import com.hoangtrang.taskoserver.service.AuthService;
 import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,7 +69,7 @@ public class AuthController {
     @Operation(summary= "Refresh token", description = "Generates a new access token using a valid refresh token.")
     @PostMapping("/refresh")
     public ResponseData<RefreshResponse> refreshToken(@RequestBody RefreshRequest request) {
-        var result = authService.refreshAccessToken(request.getRefreshToken());
+        var result = authService.refreshAccessToken(request.refreshToken());
         return ResponseData.<RefreshResponse>builder()
                 .data(result).build();
     }
