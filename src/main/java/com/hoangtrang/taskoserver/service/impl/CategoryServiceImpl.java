@@ -66,25 +66,28 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryResponse getCategoryById(UUID id, User user) {
-        Category category = categoryRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new AppException(ErrorStatus.CATEGORY_NOT_FOUND));
+    public CategoryResponse getCategoryById(UUID id, UUID userId) {
+        Category category = loadCategoryByUserId(id, userId);
         return categoryMapper.toCategoryResponse(category);
     }
 
     @Override
-    public CategoryResponse updateCategory(UUID id, CategoryRequest request, User user) {
-        Category category = categoryRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new AppException(ErrorStatus.CATEGORY_NOT_FOUND));
+    public CategoryResponse updateCategory(UUID id, CategoryRequest request, UUID userId) {
+        Category category = loadCategoryByUserId(id, userId);
+
         category.setName(request.name());
         Category updatedCategory = categoryRepository.save(category);
         return categoryMapper.toCategoryResponse(updatedCategory);
     }
 
     @Override
-    public void deleteCategory(UUID id, User user) {
-        Category category = categoryRepository.findByIdAndUser(id, user)
-                .orElseThrow(() -> new AppException(ErrorStatus.CATEGORY_NOT_FOUND));
+    public void deleteCategory(UUID id, UUID userId) {
+        Category category = loadCategoryByUserId(id, userId);
         categoryRepository.delete(category);
+    }
+
+    private Category loadCategoryByUserId(UUID id, UUID userId) {
+        return categoryRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new AppException(ErrorStatus.CATEGORY_NOT_FOUND));
     }
 }

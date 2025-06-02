@@ -13,6 +13,6 @@ import java.util.UUID;
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
     List<Category> findAllByUserOrderByCreatedAtAsc(User user);
 
-    Optional<Category> findByIdAndUser(UUID id, User user);
+    Optional<Category> findByIdAndUserId(UUID id, UUID userId);
 }
 
