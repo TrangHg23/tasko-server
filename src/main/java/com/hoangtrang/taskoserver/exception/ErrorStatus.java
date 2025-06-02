@@ -18,6 +18,8 @@ public enum ErrorStatus {
     UNAUTHENTICATED(1100, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     CATEGORY_EXISTED(1008, "Category already existed", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_FOUND(1009, "Category doesn't exist", HttpStatus.NOT_FOUND),
+    TITLE_REQUIRED(1010, "Title is required", HttpStatus.BAD_REQUEST),
+
 
     UNAUTHORIZED(1101, "You do not have permission", HttpStatus.FORBIDDEN),
     ACCESS_TOKEN_EXPIRED(1102, "Access token expired", HttpStatus.UNAUTHORIZED),

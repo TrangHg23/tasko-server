@@ -42,8 +42,8 @@ public class CategoryController {
 
     @Operation(summary = "Get all categories")
     @GetMapping
-    public ResponseData<List<CategoryResponse>> getCategories(@AuthenticationPrincipal CustomUserDetails user) {
-        var result = categoryService.getCategories(user.user());
+    public ResponseData<List<CategoryResponse>> getCategories(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        var result = categoryService.getCategories(userDetails.user());
         return new ResponseData<>(HttpStatus.OK.value(), "Get categories list successfully",result);
     }
 
@@ -51,9 +51,9 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseData<CategoryResponse> getCategoryById(
             @PathVariable UUID id,
-            @AuthenticationPrincipal CustomUserDetails user
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        CategoryResponse result = categoryService.getCategoryById(id, user.user());
+        CategoryResponse result = categoryService.getCategoryById(id, userDetails.user().getId());
         return new ResponseData<>(HttpStatus.OK.value(), "Get category successfully", result);
     }
 
@@ -63,9 +63,9 @@ public class CategoryController {
     public ResponseData<CategoryResponse> updateCategory(
             @PathVariable UUID id,
             @RequestBody CategoryRequest request,
-            @AuthenticationPrincipal CustomUserDetails user
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        CategoryResponse response = categoryService.updateCategory(id, request, user.user());
+        CategoryResponse response = categoryService.updateCategory(id, request, userDetails.user().getId());
         return new ResponseData<>(HttpStatus.OK.value(), "Updated category successfully", response);
     }
 
@@ -74,9 +74,9 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     public ResponseData<Void> deleteCategory(
             @PathVariable UUID id,
-            @AuthenticationPrincipal CustomUserDetails user
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        categoryService.deleteCategory(id, user.user());
+        categoryService.deleteCategory(id, userDetails.user().getId());
         return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Delete category successfully");
     }
 

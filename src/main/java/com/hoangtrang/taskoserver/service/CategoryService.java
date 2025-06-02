@@ -12,10 +12,10 @@ public interface CategoryService {
 
     List<CategoryResponse> getCategories(User user);
 
-    CategoryResponse getCategoryById(UUID id, User user);
+    CategoryResponse getCategoryById(UUID id, UUID userId);
 
-    CategoryResponse updateCategory(UUID id, CategoryRequest request, User user);
+    CategoryResponse updateCategory(UUID id, CategoryRequest request, UUID userId);
 
-    void deleteCategory(UUID id, User user);
+    void deleteCategory(UUID id, UUID userId);
 
 }
