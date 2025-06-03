@@ -14,8 +14,9 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -86,7 +87,7 @@ public class JwtProvider {
 
             InvalidatedToken invalidToken = InvalidatedToken.builder()
                     .id(jti)
-                    .expiryTime(Date.from(expiry))
+                    .expiryTime(Objects.requireNonNull(expiry).atOffset(ZoneOffset.UTC))
                     .build();
             if(!invalidatedTokenRepository.existsById(jti)) {
                 invalidatedTokenRepository.save(invalidToken);

@@ -1,5 +1,6 @@
 package com.hoangtrang.taskoserver.service.impl;
 
+import com.hoangtrang.taskoserver.dto.task.CountTaskResponse;
 import com.hoangtrang.taskoserver.dto.task.CreateTaskRequest;
 import com.hoangtrang.taskoserver.dto.task.TaskResponse;
 import com.hoangtrang.taskoserver.exception.AppException;
@@ -15,7 +16,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -40,4 +44,42 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.toTaskResponse(savedTask, category);
     }
 
+    @Override
+    public List<TaskResponse> filterTasks(UUID userId, String status, String due, UUID categoryId, Boolean inbox) {
+        List<Task> tasks;
+        LocalDate today = LocalDate.now();
+
+        if(Boolean.TRUE.equals(inbox)) {
+            tasks = taskRepository.findInboxTasks(userId);
+        } else if("today".equalsIgnoreCase(due)) {
+            tasks = taskRepository.findTodayTasks(userId, today);
+        } else if ("overdue".equalsIgnoreCase(status)) {
+            tasks = taskRepository.findOverdueTasks(userId, today);
+        } else if ("upcoming".equalsIgnoreCase(status)) {
+            tasks = taskRepository.findUpComingTasks(userId, today);
+        } else if ("completed".equalsIgnoreCase(status)) {
+            tasks = taskRepository.findCompletedTasks(userId);
+        } else if (categoryId != null) {
+            tasks = taskRepository.findTasksByCategory(userId, categoryId);
+        } else {
+            tasks = taskRepository.findALlByUserId(userId);
+        }
+        return tasks.stream().map(taskMapper::toTaskResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    public CountTaskResponse countTasks(UUID userId) {
+        LocalDate today = LocalDate.now();
+        long countInbox = taskRepository.countInboxTasks(userId);
+        long countToday = taskRepository.countTodayTasks(userId, today);
+        long countOverdue = taskRepository.countOverdueTasks(userId, today);
+        long countUpcoming = taskRepository.countUpComingTasks(userId, today);
+
+        return CountTaskResponse.builder()
+                .inbox(countInbox)
+                .today(countToday)
+                .overdue(countOverdue)
+                .upcoming(countUpcoming)
+                .build();
+    }
 }

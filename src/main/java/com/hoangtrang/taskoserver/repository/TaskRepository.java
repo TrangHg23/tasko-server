@@ -26,6 +26,10 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate < :today AND t.isCompleted = false ORDER BY t.dueDate ASC")
     List<Task> findOverdueTasks(@Param("userId") UUID userId, @Param("today") LocalDate today);
 
+    // Lấy upcoming task
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate > :today AND t.isCompleted = false ORDER BY t.dueDate ASC")
+    List<Task> findUpComingTasks(@Param("userId") UUID userId, @Param("today") LocalDate today);
+
     // Lấy task theo category
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.categoryId = :categoryId AND t.isCompleted = false ORDER BY t.createdAt DESC")
     List<Task> findTasksByCategory(@Param("userId") UUID userId, @Param("categoryId") UUID categoryId);
@@ -44,5 +48,12 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @Query("SELECT COUNT(t) FROM Task t WHERE t.userId = :userId AND t.dueDate < :today AND t.isCompleted = false")
     long countOverdueTasks(@Param("userId") UUID userId, @Param("today") LocalDate today);
 
+    @Query("SELECT COUNT(t) FROM Task t WHERE t.userId = :userId AND t.dueDate > :today AND t.isCompleted = false")
+    long countUpComingTasks(@Param("userId") UUID userId, @Param("today") LocalDate today);
+
+    long countByUserIdAndCategoryId(UUID userId, UUID categoryId);
+
     Optional<Task> findByIdAndUserId(UUID id, UUID userId);
+
+    List<Task> findALlByUserId(UUID userId);
 }
