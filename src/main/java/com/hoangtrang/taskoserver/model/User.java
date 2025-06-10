@@ -13,7 +13,7 @@ import java.util.UUID;
 public class User {
     @Id
     @GeneratedValue(generator = "UUID")
-    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "uuid")
+    @Column(name = "id", updatable = false, columnDefinition = "uuid")
     private UUID id;
 
     @Column(name="email", unique = true, nullable = false)
