@@ -14,11 +14,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 
@@ -72,5 +71,12 @@ public class AuthController {
         var result = authService.refreshAccessToken(request.refreshToken());
         return ResponseData.<RefreshResponse>builder()
                 .data(result).build();
+    }
+
+    @Operation(summary = "Get current user's information")
+    @GetMapping("/me")
+    public ResponseData<UserInfo> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        var user = authService.getCurrentUserInfo(userDetails.getUsername());
+        return new ResponseData<>(HttpStatus.OK.value(), "Get current user's info successfully", user);
     }
 }
