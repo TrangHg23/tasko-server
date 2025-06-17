@@ -17,4 +17,6 @@ public interface AuthService {
     void logout(LogoutRequest request) throws ParseException, JOSEException;
 
     RefreshResponse refreshAccessToken(String refreshToken);
+
+    UserInfo getCurrentUserInfo(String email);
 }

@@ -31,7 +31,13 @@ public class SecurityConfig {
     @Value("${spring.security.jwt.secret-key}")
     private String secretKey;
 
-    private final String[] PUBLIC_ENDPOINTS = {"/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"};
+    private final String[] PUBLIC_ENDPOINTS = {
+            "/api/auth/sign-up",
+            "/api/auth/log-in",
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
+    };
 
     @Bean
     public JwtDecoder jwtDecoder() {

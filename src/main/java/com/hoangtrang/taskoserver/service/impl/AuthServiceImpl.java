@@ -113,4 +113,11 @@ public class AuthServiceImpl implements AuthService {
                 .build();
     }
 
+    @Override
+    public UserInfo getCurrentUserInfo(String email) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorStatus.USER_NOT_EXISTED));
+        return userMapper.toUserInfo(user);
+    }
+
 }
