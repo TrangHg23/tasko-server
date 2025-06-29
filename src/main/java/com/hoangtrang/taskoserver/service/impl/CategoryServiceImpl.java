@@ -43,6 +43,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public void createDefaultCategories(User currentUser) {
+        List<String> defaultNames = List.of("Home", "Work");
+        List<Category>  defaultCategories = defaultNames.stream()
+                .map((name) -> Category.builder()
+                        .name(name)
+                        .user(currentUser)
+                        .build())
+                .toList();
+
+        categoryRepository.saveAll(defaultCategories);
+    }
+
+    @Override
     public List<CategoryResponse> getCategories(User user) {
         User foundUser = userRepository.findByEmail(user.getEmail())
                 .orElseThrow(() -> new AppException(ErrorStatus.USER_NOT_EXISTED));
