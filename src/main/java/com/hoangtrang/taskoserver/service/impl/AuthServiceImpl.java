@@ -11,6 +11,7 @@ import com.hoangtrang.taskoserver.model.User;
 import com.hoangtrang.taskoserver.model.enums.TokenType;
 import com.hoangtrang.taskoserver.repository.UserRepository;
 import com.hoangtrang.taskoserver.service.AuthService;
+import com.hoangtrang.taskoserver.service.CategoryService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -26,6 +27,7 @@ import java.time.OffsetDateTime;
 public class AuthServiceImpl implements AuthService {
 
     UserRepository userRepository;
+    CategoryService categoryService;
     PasswordEncoder passwordEncoder;
     UserMapper userMapper;
     JwtProvider jwtProvider;
@@ -39,8 +41,11 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setCreatedAt(OffsetDateTime.now());
 
-        userRepository.save(user);
-        return userMapper.toRegisterResponse(user);
+        User savedUser = userRepository.save(user);
+
+        categoryService.createDefaultCategories(savedUser);
+
+        return userMapper.toRegisterResponse(savedUser);
     }
 
     @Override
