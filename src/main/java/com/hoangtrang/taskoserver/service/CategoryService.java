@@ -18,4 +18,6 @@ public interface CategoryService {
 
     void deleteCategory(UUID id, User user);
 
+    void createDefaultCategories(User user);
+
 }
