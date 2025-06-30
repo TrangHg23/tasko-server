@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
-    List<Category> findAllByUser(User user);
+    List<Category> findAllByUserOrderByCreatedAtAsc(User user);
 
     Optional<Category> findByIdAndUser(UUID id, User user);
 }
