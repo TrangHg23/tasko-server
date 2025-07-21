@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public record CreateTaskRequest(
+public record TaskRequest(
         @NotBlank(message = "TITLE_REQUIRED")
         String title,
 

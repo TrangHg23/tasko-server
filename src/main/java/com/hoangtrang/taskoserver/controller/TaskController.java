@@ -3,8 +3,9 @@ package com.hoangtrang.taskoserver.controller;
 import com.hoangtrang.taskoserver.config.security.CustomUserDetails;
 import com.hoangtrang.taskoserver.dto.common.ResponseData;
 import com.hoangtrang.taskoserver.dto.task.CountTaskResponse;
-import com.hoangtrang.taskoserver.dto.task.CreateTaskRequest;
+import com.hoangtrang.taskoserver.dto.task.TaskRequest;
 import com.hoangtrang.taskoserver.dto.task.TaskResponse;
+import com.hoangtrang.taskoserver.dto.task.UpdateTaskRequest;
 import com.hoangtrang.taskoserver.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +38,7 @@ public class TaskController {
     @PostMapping
     public ResponseData<TaskResponse> createTask(
             @Valid
-            @RequestBody CreateTaskRequest request,
+            @RequestBody TaskRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         TaskResponse response = taskService.createTask(request, userDetails.user().getId());
@@ -75,5 +76,36 @@ public class TaskController {
         CountTaskResponse response = taskService.countTasks(userDetails.user().getId());
         return new ResponseData<>(HttpStatus.OK.value(), "Count tasks successfully", response);
     }
+
+    @Operation(summary="Update task")
+    @PutMapping("/{id}")
+    public ResponseData<TaskResponse> updateTask(
+            @PathVariable("id") UUID taskId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody TaskRequest updateTask
+    ) {
+        TaskResponse response = taskService.updateTask(taskId, userDetails.user().getId(), updateTask);
+        return new ResponseData<>(HttpStatus.OK.value(), "Updated task successfully", response);
+    }
+
+    @Operation(summary="Update partial task")
+    @PatchMapping("/{id}")
+    public ResponseData<TaskResponse> updatePartialTask(
+            @PathVariable("id") UUID taskId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody UpdateTaskRequest updateTask
+    ){
+        TaskResponse response = taskService.patchTask(taskId, userDetails.user().getId(), updateTask);
+        return new ResponseData<>(HttpStatus.OK.value(), "Updated task successfully", response);
+    }
+
+    @Operation(summary="Delete task")
+    @DeleteMapping("/{id}")
+    public ResponseData<Void> deleteTask(@PathVariable("id") UUID taskId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        taskService.deleteTask(taskId, userDetails.user().getId());
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "Deleted task successfully");
+    }
+
+
 
 }
