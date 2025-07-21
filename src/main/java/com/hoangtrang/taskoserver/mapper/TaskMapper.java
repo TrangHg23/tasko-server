@@ -1,11 +1,12 @@
 package com.hoangtrang.taskoserver.mapper;
 
-import com.hoangtrang.taskoserver.dto.task.CreateTaskRequest;
+import com.hoangtrang.taskoserver.dto.task.TaskRequest;
 import com.hoangtrang.taskoserver.dto.task.TaskResponse;
 import com.hoangtrang.taskoserver.model.Category;
 import com.hoangtrang.taskoserver.model.Task;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import java.util.UUID;
 
@@ -28,6 +29,7 @@ public interface TaskMapper {
     @Mapping(target = "userId", source = "userId")
     @Mapping(target = "categoryId", source = "request.categoryId")
     @Mapping(target = "priority", expression = "java(request.priority() != null ? request.priority() : PriorityLevel.NONE)")
-    Task toTask(CreateTaskRequest request, UUID userId);
+    Task toTask(TaskRequest request, UUID userId);
 
+    void updateTaskFromDto(TaskRequest dto, @MappingTarget Task task);
 }

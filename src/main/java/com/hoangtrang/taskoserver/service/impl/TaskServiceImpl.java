@@ -1,8 +1,9 @@
 package com.hoangtrang.taskoserver.service.impl;
 
 import com.hoangtrang.taskoserver.dto.task.CountTaskResponse;
-import com.hoangtrang.taskoserver.dto.task.CreateTaskRequest;
+import com.hoangtrang.taskoserver.dto.task.TaskRequest;
 import com.hoangtrang.taskoserver.dto.task.TaskResponse;
+import com.hoangtrang.taskoserver.dto.task.UpdateTaskRequest;
 import com.hoangtrang.taskoserver.exception.AppException;
 import com.hoangtrang.taskoserver.exception.ErrorStatus;
 import com.hoangtrang.taskoserver.mapper.TaskMapper;
@@ -17,6 +18,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,7 +34,7 @@ public class TaskServiceImpl implements TaskService {
     TaskMapper taskMapper;
 
     @Override
-    public TaskResponse createTask(CreateTaskRequest request, UUID userId) {
+    public TaskResponse createTask(TaskRequest request, UUID userId) {
         Task task = taskMapper.toTask(request, userId);
 
         Category category = null;
@@ -81,5 +84,45 @@ public class TaskServiceImpl implements TaskService {
                 .overdue(countOverdue)
                 .upcoming(countUpcoming)
                 .build();
+    }
+
+    private Task loadTaskByUserId(UUID taskId, UUID userId) {
+        return taskRepository.findByIdAndUserId(taskId, userId)
+                .orElseThrow(() -> new AppException(ErrorStatus.TASK_NOT_FOUND));
+    }
+    @Override
+    public TaskResponse updateTask(UUID taskId, UUID userId, TaskRequest updateTask) {
+        Task task = loadTaskByUserId(taskId, userId);
+        taskMapper.updateTaskFromDto(updateTask, task);
+        Task savedTask = taskRepository.save(task);
+        return taskMapper.toTaskResponse(savedTask);
+    }
+
+    @Override
+    public TaskResponse patchTask(UUID taskId, UUID userId, UpdateTaskRequest updateTask) {
+        Task task = loadTaskByUserId(taskId, userId);
+        if(updateTask.getTitle() != null) task.setTitle(updateTask.getTitle());
+        if(updateTask.getDescription() != null) task.setDescription(updateTask.getDescription());
+        if(updateTask.getDueDate() != null) task.setDueDate(updateTask.getDueDate());
+        if(updateTask.getPriority() != null) task.setPriority(updateTask.getPriority());
+
+        // logic with completed task
+        if(updateTask.getIsCompleted() != null) {
+            task.setIsCompleted(updateTask.getIsCompleted());
+            if(updateTask.getIsCompleted()) {
+                task.setCompletedAt(OffsetDateTime.now(ZoneOffset.UTC));
+            } else {
+                task.setCompletedAt(null);
+            }
+        }
+
+        Task savedTask = taskRepository.save(task);
+        return taskMapper.toTaskResponse(savedTask);
+    }
+
+    @Override
+    public void deleteTask(UUID taskId, UUID userId) {
+        Task task = loadTaskByUserId(taskId, userId);
+        taskRepository.delete(task);
     }
 }

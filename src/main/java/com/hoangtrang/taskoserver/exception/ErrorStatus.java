@@ -19,6 +19,7 @@ public enum ErrorStatus {
     CATEGORY_NOT_FOUND(1009, "Category doesn't exist", HttpStatus.NOT_FOUND),
     NAME_REQUIRED(1010, "Name is required", HttpStatus.BAD_REQUEST),
     TITLE_REQUIRED(1011, "Title is required", HttpStatus.BAD_REQUEST),
+    TASK_NOT_FOUND(1012, "Task is required", HttpStatus.BAD_REQUEST),
 
 
     UNAUTHORIZED(1101, "You do not have permission", HttpStatus.FORBIDDEN),
