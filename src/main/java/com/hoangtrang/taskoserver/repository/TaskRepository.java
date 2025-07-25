@@ -18,9 +18,9 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.categoryId IS NULL AND t.isCompleted = false ORDER BY t.createdAt DESC")
     List<Task> findInboxTasks(@Param("userId") UUID userId);
 
-    // Lấy task today (tính cả task có category)
-    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate =:today AND t.isCompleted = false ORDER BY t.priority DESC, t.createdAt DESC")
-    List<Task> findTodayTasks(@Param("userId") UUID userId, @Param("today")LocalDate today);
+    // Lấy task theo dueDate (tính cả task có category)
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate =:dueDate AND t.isCompleted = false ORDER BY t.priority DESC, t.createdAt DESC")
+    List<Task> findTasksByDueDate(@Param("userId") UUID userId, @Param("dueDate")LocalDate dueDate);
 
     // Lấy task overdue
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate < :today AND t.isCompleted = false ORDER BY t.dueDate ASC")

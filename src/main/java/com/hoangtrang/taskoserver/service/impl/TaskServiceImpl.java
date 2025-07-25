@@ -48,14 +48,14 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponse> filterTasks(UUID userId, String status, String due, UUID categoryId, Boolean inbox) {
+    public List<TaskResponse> filterTasks(UUID userId, String status,LocalDate dueDate, UUID categoryId, Boolean inbox) {
         List<Task> tasks;
         LocalDate today = LocalDate.now();
 
         if(Boolean.TRUE.equals(inbox)) {
             tasks = taskRepository.findInboxTasks(userId);
-        } else if("today".equalsIgnoreCase(due)) {
-            tasks = taskRepository.findTodayTasks(userId, today);
+        } else if(dueDate != null) {
+            tasks = taskRepository.findTasksByDueDate(userId,dueDate);
         } else if ("overdue".equalsIgnoreCase(status)) {
             tasks = taskRepository.findOverdueTasks(userId, today);
         } else if ("upcoming".equalsIgnoreCase(status)) {
