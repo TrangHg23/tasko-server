@@ -14,11 +14,13 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,12 +49,12 @@ public class TaskController {
 
     @Operation(
             summary = "Get tasks with filters",
-            description = "Retrieve tasks by applying only one filter at a time: inbox=true, categoryId, due (today), or status (overdue, upcoming, completed)."
+            description = "Retrieve tasks by applying only one filter at a time: inbox=true, categoryId, dueDate, or status (overdue, upcoming, completed)."
     )
     @GetMapping
     public ResponseData<List<TaskResponse>> getFilterTasks(
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String due,
+            @RequestParam(required = false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate dueDate,
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(required= false) Boolean inbox,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -60,7 +62,7 @@ public class TaskController {
         List<TaskResponse> tasks = taskService.filterTasks(
                 userDetails.user().getId(),
                 status,
-                due,
+                dueDate,
                 categoryId,
                 inbox
         );
