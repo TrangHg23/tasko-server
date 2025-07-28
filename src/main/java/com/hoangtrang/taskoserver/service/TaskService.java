@@ -7,12 +7,15 @@ import com.hoangtrang.taskoserver.dto.task.UpdateTaskRequest;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface TaskService {
     TaskResponse createTask(TaskRequest request, UUID userId);
 
     List<TaskResponse> filterTasks(UUID userId, String status, LocalDate dueDate, UUID categoryId, Boolean inbox);
+
+    Map<LocalDate, List<TaskResponse>> getTasksByDueDateList(UUID userId, List<LocalDate> dueDates);
 
     CountTaskResponse countTasks(UUID userId);
 

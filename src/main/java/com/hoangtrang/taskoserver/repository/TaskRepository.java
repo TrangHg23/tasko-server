@@ -15,12 +15,16 @@ import java.util.UUID;
 public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     // Lấy tất cả task trong inbox (categoryId = null và chưa completed)
-    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.categoryId IS NULL AND t.isCompleted = false ORDER BY t.createdAt DESC")
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.categoryId IS NULL AND t.isCompleted = false ORDER BY t.createdAt")
     List<Task> findInboxTasks(@Param("userId") UUID userId);
 
     // Lấy task theo dueDate (tính cả task có category)
-    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate =:dueDate AND t.isCompleted = false ORDER BY t.priority DESC, t.createdAt DESC")
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate =:dueDate AND t.isCompleted = false ORDER BY t.createdAt")
     List<Task> findTasksByDueDate(@Param("userId") UUID userId, @Param("dueDate")LocalDate dueDate);
+
+    // Lấy tất cả các task theo dueDate
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate IN :dueDates AND t.isCompleted = false ORDER BY t.createdAt" )
+    List<Task> findTasksByDueDateList(@Param("userId") UUID userId, @Param("dueDates") List<LocalDate> dueDates);
 
     // Lấy task overdue
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.dueDate < :today AND t.isCompleted = false ORDER BY t.dueDate ASC")
@@ -31,7 +35,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> findUpComingTasks(@Param("userId") UUID userId, @Param("today") LocalDate today);
 
     // Lấy task theo category
-    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.categoryId = :categoryId AND t.isCompleted = false ORDER BY t.createdAt DESC")
+    @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.categoryId = :categoryId AND t.isCompleted = false ORDER BY t.createdAt")
     List<Task> findTasksByCategory(@Param("userId") UUID userId, @Param("categoryId") UUID categoryId);
 
     // Lấy completed tasks
