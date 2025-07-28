@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,16 @@ public class TaskServiceImpl implements TaskService {
 
         Task savedTask = taskRepository.save(task);
         return taskMapper.toTaskResponse(savedTask, category);
+    }
+
+    @Override
+    public Map<LocalDate, List<TaskResponse>> getTasksByDueDateList(UUID userId, List<LocalDate> dueDates) {
+        List<Task> tasks = taskRepository.findTasksByDueDateList(userId, dueDates);
+        return tasks.stream()
+                .collect(Collectors.groupingBy(
+                        Task::getDueDate,
+                        Collectors.mapping(taskMapper::toTaskResponse, Collectors.toList())
+                ));
     }
 
     @Override

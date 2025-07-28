@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -67,6 +68,15 @@ public class TaskController {
                 inbox
         );
         return new ResponseData<>(HttpStatus.OK.value(), "Get tasks successfully", tasks);
+    }
+
+    @GetMapping(params = "dueDates")
+    public ResponseData<Map<LocalDate, List<TaskResponse>>> getTaskByDueDates(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> dueDates
+    ) {
+        Map<LocalDate, List<TaskResponse>> result = taskService.getTasksByDueDateList(userDetails.user().getId(), dueDates);
+        return new ResponseData<>(HttpStatus.OK.value(), "Get tasks successfully", result);
     }
 
     @Operation(
