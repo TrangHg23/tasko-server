@@ -70,10 +70,14 @@ public class TaskController {
         return new ResponseData<>(HttpStatus.OK.value(), "Get tasks successfully", tasks);
     }
 
-    @GetMapping(params = "dueDates")
+    @Operation(
+            summary = "Get tasks grouped by due dates",
+            description = "Return tasks organized by due dates. You can optionally filter by a list of specific dueDates."
+    )
+    @GetMapping("/due-date-groups")
     public ResponseData<Map<LocalDate, List<TaskResponse>>> getTaskByDueDates(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> dueDates
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> dueDates
     ) {
         Map<LocalDate, List<TaskResponse>> result = taskService.getTasksByDueDateList(userDetails.user().getId(), dueDates);
         return new ResponseData<>(HttpStatus.OK.value(), "Get tasks successfully", result);
