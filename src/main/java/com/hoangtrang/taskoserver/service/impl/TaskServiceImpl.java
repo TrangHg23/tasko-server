@@ -6,6 +6,7 @@ import com.hoangtrang.taskoserver.dto.task.TaskResponse;
 import com.hoangtrang.taskoserver.dto.task.UpdateTaskRequest;
 import com.hoangtrang.taskoserver.exception.AppException;
 import com.hoangtrang.taskoserver.exception.ErrorStatus;
+import com.hoangtrang.taskoserver.mapper.CategoryMapper;
 import com.hoangtrang.taskoserver.mapper.TaskMapper;
 import com.hoangtrang.taskoserver.model.Category;
 import com.hoangtrang.taskoserver.model.Task;
@@ -20,9 +21,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -33,14 +33,15 @@ public class TaskServiceImpl implements TaskService {
     TaskRepository taskRepository;
     CategoryRepository categoryRepository;
     TaskMapper taskMapper;
+    CategoryMapper categoryMapper;
 
     @Override
     public TaskResponse createTask(TaskRequest request, UUID userId) {
         Task task = taskMapper.toTask(request, userId);
 
         Category category = null;
-        if(request.categoryId() != null) {
-            category = categoryRepository.findByIdAndUserId(request.categoryId(), userId)
+        if(request.getCategoryId() != null) {
+            category = categoryRepository.findByIdAndUserId(request.getCategoryId(), userId)
                     .orElseThrow(() -> new AppException(ErrorStatus.CATEGORY_NOT_FOUND));
         }
 
@@ -78,7 +79,26 @@ public class TaskServiceImpl implements TaskService {
         } else {
             tasks = taskRepository.findALlByUserId(userId);
         }
-        return tasks.stream().map(taskMapper::toTaskResponse).collect(Collectors.toList());
+
+        Set<UUID> categoryIds = tasks.stream()
+                .map(Task::getCategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<UUID, Category> categoryMap = categoryRepository.findAllById(categoryIds)
+                .stream()
+                .collect(Collectors.toMap(Category::getId, Function.identity()));
+
+        return tasks.stream().map(task -> {
+            TaskResponse res = taskMapper.toTaskResponse(task);
+            if (task.getCategoryId() != null) {
+                Category cat = categoryMap.get(task.getCategoryId());
+                if (cat != null) {
+                    res.setCategory(categoryMapper.toCategoryResponse(cat));
+                }
+            }
+            return res;
+        }).toList();
     }
 
     @Override

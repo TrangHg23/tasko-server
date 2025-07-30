@@ -4,6 +4,5 @@ public enum PriorityLevel {
     URGENT,
     HIGH,
     MEDIUM,
-    LOW,
-    NONE
+    LOW
 }
