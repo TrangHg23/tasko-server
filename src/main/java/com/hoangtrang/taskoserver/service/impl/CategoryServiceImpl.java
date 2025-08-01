@@ -60,9 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
         User foundUser = userRepository.findByEmail(user.getEmail())
                 .orElseThrow(() -> new AppException(ErrorStatus.USER_NOT_EXISTED));
 
-        return categoryRepository.findAllByUserOrderByCreatedAtAsc(foundUser)
-                 .stream().map(categoryMapper::toCategoryResponse)
-                 .collect(Collectors.toList());
+        return categoryRepository.findAllCategories(foundUser.getId());
     }
 
     @Override

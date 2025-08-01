@@ -55,8 +55,6 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     @Query("SELECT COUNT(t) FROM Task t WHERE t.userId = :userId AND t.dueDate > :today AND t.isCompleted = false")
     long countUpComingTasks(@Param("userId") UUID userId, @Param("today") LocalDate today);
 
-    long countByUserIdAndCategoryId(UUID userId, UUID categoryId);
-
     Optional<Task> findByIdAndUserId(UUID id, UUID userId);
 
     List<Task> findALlByUserId(UUID userId);
