@@ -52,12 +52,31 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Map<LocalDate, List<TaskResponse>> getTasksByDueDateList(UUID userId, List<LocalDate> dueDates) {
         List<Task> tasks = taskRepository.findTasksByDueDateList(userId, dueDates);
-        return tasks.stream()
-                .collect(Collectors.groupingBy(
-                        Task::getDueDate,
-                        Collectors.mapping(taskMapper::toTaskResponse, Collectors.toList())
-                ));
+
+        Set<UUID> categoryIds = tasks.stream()
+                .map(Task::getCategoryId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<UUID, Category> categoryMap = categoryRepository.findAllById(categoryIds)
+                .stream()
+                .collect(Collectors.toMap(Category::getId, Function.identity()));
+
+        List<TaskResponse> result = tasks.stream().map(task -> {
+            TaskResponse res = taskMapper.toTaskResponse(task);
+            if (task.getCategoryId() != null) {
+                Category cat = categoryMap.get(task.getCategoryId());
+                if (cat != null) {
+                    res.setCategory(categoryMapper.toCategoryResponse(cat));
+                }
+            }
+            return res;
+        }).toList();
+
+        return result.stream()
+                .collect(Collectors.groupingBy(TaskResponse::getDueDate));
     }
+
 
     @Override
     public List<TaskResponse> filterTasks(UUID userId, String status,LocalDate dueDate, UUID categoryId, Boolean inbox) {
@@ -147,8 +166,17 @@ public class TaskServiceImpl implements TaskService {
             }
         }
 
+        Category category = null;
+
+        if (updateTask.getCategoryId() != null) {
+         category = categoryRepository.findByIdAndUserId(updateTask.getCategoryId(), userId)
+                .orElseThrow(() -> new AppException(ErrorStatus.CATEGORY_NOT_FOUND));
+            task.setCategoryId(updateTask.getCategoryId());
+        } else {
+            task.setCategoryId(null);
+        }
         Task savedTask = taskRepository.save(task);
-        return taskMapper.toTaskResponse(savedTask);
+        return taskMapper.toTaskResponse(savedTask, category);
     }
 
     @Override
