@@ -16,7 +16,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @FieldDefaults(level= AccessLevel.PRIVATE)
 public class UpdateTaskRequest {
-    @NotBlank(message = "TITLE_REQUIRED")
     String title;
 
     String description;
