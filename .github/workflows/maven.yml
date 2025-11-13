@@ -52,6 +52,9 @@ jobs:
       - name: Set Environment Variables
         run: echo "SIGNER_KEY=${{ secrets.SIGNER_KEY }}" >> $GITHUB_ENV
 
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
       - name: Deploy to Production
         run: echo "Deploying to production..."
         env:
@@ -65,4 +68,9 @@ jobs:
           SIGNER_KEY: ${{ secrets.SIGNER_KEY }}
 
       - name: Update dependency graph
+        continue-on-error: true
         uses: advanced-security/maven-dependency-submission-action@v4
+        with:
+          directory: .
+          ignore-maven-wrapper: false
+          token: ${{ secrets.GITHUB_TOKEN }}
