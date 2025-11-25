@@ -17,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -36,6 +37,7 @@ public class TaskServiceImpl implements TaskService {
     CategoryMapper categoryMapper;
 
     @Override
+    @Transactional
     public TaskResponse createTask(TaskRequest request, UUID userId) {
         Task task = taskMapper.toTask(request, userId);
 
@@ -96,7 +98,7 @@ public class TaskServiceImpl implements TaskService {
         } else if (categoryId != null) {
             tasks = taskRepository.findTasksByCategory(userId, categoryId);
         } else {
-            tasks = taskRepository.findALlByUserId(userId);
+            tasks = taskRepository.findAllByUserId(userId);
         }
 
         Set<UUID> categoryIds = tasks.stream()
@@ -141,14 +143,23 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new AppException(ErrorStatus.TASK_NOT_FOUND));
     }
     @Override
+    @Transactional
     public TaskResponse updateTask(UUID taskId, UUID userId, TaskRequest updateTask) {
         Task task = loadTaskByUserId(taskId, userId);
         taskMapper.updateTaskFromDto(updateTask, task);
         Task savedTask = taskRepository.save(task);
-        return taskMapper.toTaskResponse(savedTask);
+        
+        Category category = null;
+        if (updateTask.getCategoryId() != null) {
+            category = categoryRepository.findByIdAndUserId(updateTask.getCategoryId(), userId)
+                    .orElseThrow(() -> new AppException(ErrorStatus.CATEGORY_NOT_FOUND));
+        }
+        
+        return taskMapper.toTaskResponse(savedTask, category);
     }
 
     @Override
+    @Transactional
     public TaskResponse patchTask(UUID taskId, UUID userId, UpdateTaskRequest updateTask) {
         Task task = loadTaskByUserId(taskId, userId);
         if(updateTask.getTitle() != null) task.setTitle(updateTask.getTitle());
@@ -180,6 +191,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional
     public void deleteTask(UUID taskId, UUID userId) {
         Task task = loadTaskByUserId(taskId, userId);
         taskRepository.delete(task);
