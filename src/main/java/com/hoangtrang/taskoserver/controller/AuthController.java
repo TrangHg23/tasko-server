@@ -6,6 +6,7 @@ import com.hoangtrang.taskoserver.dto.auth.IntrospectRequest;
 import com.hoangtrang.taskoserver.dto.auth.IntrospectResponse;
 import com.hoangtrang.taskoserver.dto.auth.LoginRequest;
 import com.hoangtrang.taskoserver.service.AuthService;
+import com.hoangtrang.taskoserver.service.PasswordResetService;
 import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +31,7 @@ import java.text.ParseException;
 public class AuthController {
 
     AuthService authService;
+    PasswordResetService passwordResetService;
 
     @Operation(summary = "Register new account", description = "Creates a new user account using email and password.")
     @PostMapping("/sign-up")
@@ -79,4 +81,11 @@ public class AuthController {
         var user = authService.getCurrentUserInfo(userDetails.getUsername());
         return new ResponseData<>(HttpStatus.OK.value(), "Get current user's info successfully", user);
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseData<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        passwordResetService.createPasswordResetToken(forgotPasswordRequest);
+        return new ResponseData<>(HttpStatus.OK.value(), "If your email exists, a password reset link has been sent.");
+    }
+
 }
