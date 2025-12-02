@@ -24,3 +24,5 @@ openapi:
     server: http://${SERVER_HOST}:${SERVER_PORT_DEV}
     title: Tasko API
     version: 1.0.0
+app:
+  frontend-url: ${FRONTEND_URL}

@@ -82,6 +82,10 @@ public class AuthController {
         return new ResponseData<>(HttpStatus.OK.value(), "Get current user's info successfully", user);
     }
 
+    @Operation(
+        summary = "Send a password reset email",
+        description = "Accepts a user's email and, if it exists, sends a password reset link to that email."
+    )
     @PostMapping("/forgot-password")
     public ResponseData<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         passwordResetService.createPasswordResetToken(forgotPasswordRequest);

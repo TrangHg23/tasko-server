@@ -1,12 +1,11 @@
 package com.hoangtrang.taskoserver.service.impl;
 
 import com.hoangtrang.taskoserver.dto.auth.ForgotPasswordRequest;
-import com.hoangtrang.taskoserver.exception.AppException;
-import com.hoangtrang.taskoserver.exception.ErrorStatus;
 import com.hoangtrang.taskoserver.model.PasswordResetToken;
 import com.hoangtrang.taskoserver.model.User;
 import com.hoangtrang.taskoserver.repository.PasswordResetTokenRepository;
 import com.hoangtrang.taskoserver.repository.UserRepository;
+import com.hoangtrang.taskoserver.service.EmailService;
 import com.hoangtrang.taskoserver.service.PasswordResetService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -23,6 +22,7 @@ import java.util.UUID;
 public class PasswordResetServiceImpl implements PasswordResetService {
     UserRepository userRepository;
     PasswordResetTokenRepository tokenRepository;
+    EmailService emailService;
 
     @Transactional
     @Override
@@ -45,6 +45,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                 );
 
         tokenRepository.save(resetToken);
+
+        emailService.sendPasswordResetEmail(user.getEmail(), resetToken.getToken());
 
     }
 }
