@@ -21,7 +21,7 @@ public class EmailServiceImpl implements EmailService {
 
     final JavaMailSender mailSender;
 
-    @Value("${app.frontend-url}")
+    @Value("${FRONTEND_URL}")
     String baseUrl;
 
     @Value("${MAIL_USERNAME}")
