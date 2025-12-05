@@ -20,7 +20,9 @@ public enum ErrorStatus {
     NAME_REQUIRED(1010, "Name is required", HttpStatus.BAD_REQUEST),
     TITLE_REQUIRED(1011, "Title is required", HttpStatus.BAD_REQUEST),
     TASK_NOT_FOUND(1012, "Task is required", HttpStatus.BAD_REQUEST),
-
+    TOKEN_NOT_FOUND(1013, "Reset token doesn't exist", HttpStatus.NOT_FOUND),
+    TOKEN_EXPIRED(1014, "Reset token expired", HttpStatus.BAD_REQUEST),
+    TOKEN_ALREADY_USED(1015, "Reset token already used", HttpStatus.BAD_REQUEST),
 
     UNAUTHORIZED(1101, "You do not have permission", HttpStatus.FORBIDDEN),
     UNAUTHENTICATED(1100, "Unauthenticated", HttpStatus.UNAUTHORIZED),

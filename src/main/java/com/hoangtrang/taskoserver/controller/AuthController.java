@@ -92,4 +92,14 @@ public class AuthController {
         return new ResponseData<>(HttpStatus.OK.value(), "If your email exists, a password reset link has been sent.");
     }
 
+    @Operation(
+        summary = "Reset password",
+        description = "Updates the user's password using a valid reset token. The token must not be expired or already used."
+    )
+    @PostMapping("/reset-password")
+    public ResponseData<String> resetPassword(@Valid @RequestBody ResetPasswordRequest resetRequest) {
+        passwordResetService.resetPassword(resetRequest);
+        return new ResponseData<>(HttpStatus.OK.value(), "Password reset successfully");
+    }
+
 }

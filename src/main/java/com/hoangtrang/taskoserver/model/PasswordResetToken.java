@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -21,7 +21,9 @@ public class PasswordResetToken {
 
     String token;
 
-    OffsetDateTime expiryDate;
+    Instant expiryDate;
+
+    boolean used = false;
 
     @OneToOne
     @JoinColumn(name = "user_id", unique = true, nullable = false)
