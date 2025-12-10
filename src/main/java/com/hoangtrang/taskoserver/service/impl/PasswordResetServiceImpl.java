@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
@@ -41,6 +40,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
                 .map(existing -> {
                     existing.setToken(UUID.randomUUID().toString());
                     existing.setExpiryDate(Instant.now().plus(30, ChronoUnit.MINUTES));
+                    existing.setUsed(false);
                     return existing;
                 })
                 .orElse(

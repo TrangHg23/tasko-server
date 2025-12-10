@@ -31,7 +31,7 @@ public class EmailServiceImpl implements EmailService {
     @Async
     public void sendPasswordResetEmail(String to, String token) {
         try {
-            String resetUrl = baseUrl + "/account/reset-password?token=" + token;
+            String resetUrl = baseUrl + "/auth/reset-password?token=" + token;
 
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
