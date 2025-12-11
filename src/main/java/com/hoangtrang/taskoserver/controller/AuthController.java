@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.java.Log;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -97,9 +98,11 @@ public class AuthController {
         description = "Updates the user's password using a valid reset token. The token must not be expired or already used."
     )
     @PostMapping("/reset-password")
-    public ResponseData<String> resetPassword(@Valid @RequestBody ResetPasswordRequest resetRequest) {
-        passwordResetService.resetPassword(resetRequest);
-        return new ResponseData<>(HttpStatus.OK.value(), "Password reset successfully");
+    public ResponseData<LoginResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetRequest) {
+        LoginResponse result = passwordResetService.resetPassword(resetRequest);
+        return ResponseData.<LoginResponse>builder()
+                .data(result)
+                .build();
     }
 
 }
