@@ -6,6 +6,7 @@ import com.hoangtrang.taskoserver.dto.auth.IntrospectRequest;
 import com.hoangtrang.taskoserver.dto.auth.IntrospectResponse;
 import com.hoangtrang.taskoserver.dto.auth.LoginRequest;
 import com.hoangtrang.taskoserver.service.AuthService;
+import com.hoangtrang.taskoserver.service.PasswordResetService;
 import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.java.Log;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +32,7 @@ import java.text.ParseException;
 public class AuthController {
 
     AuthService authService;
+    PasswordResetService passwordResetService;
 
     @Operation(summary = "Register new account", description = "Creates a new user account using email and password.")
     @PostMapping("/sign-up")
@@ -79,4 +82,27 @@ public class AuthController {
         var user = authService.getCurrentUserInfo(userDetails.getUsername());
         return new ResponseData<>(HttpStatus.OK.value(), "Get current user's info successfully", user);
     }
+
+    @Operation(
+        summary = "Send a password reset email",
+        description = "Accepts a user's email and, if it exists, sends a password reset link to that email."
+    )
+    @PostMapping("/forgot-password")
+    public ResponseData<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        passwordResetService.createPasswordResetToken(forgotPasswordRequest);
+        return new ResponseData<>(HttpStatus.OK.value(), "If your email exists, a password reset link has been sent.");
+    }
+
+    @Operation(
+        summary = "Reset password",
+        description = "Updates the user's password using a valid reset token. The token must not be expired or already used."
+    )
+    @PostMapping("/reset-password")
+    public ResponseData<LoginResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest resetRequest) {
+        LoginResponse result = passwordResetService.resetPassword(resetRequest);
+        return ResponseData.<LoginResponse>builder()
+                .data(result)
+                .build();
+    }
+
 }
