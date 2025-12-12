@@ -19,6 +19,7 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,20 +44,12 @@ public class PasswordResetServiceImpl implements PasswordResetService {
         User user = userRepository.findByEmail(forgotPasswordRequest.email()).orElse(null);
         if(user == null) return;
 
-        PasswordResetToken resetToken = tokenRepository.findByUser_Id(user.getId())
-                .map(existing -> {
-                    existing.setToken(UUID.randomUUID().toString());
-                    existing.setExpiryDate(Instant.now().plus(30, ChronoUnit.MINUTES));
-                    existing.setUsed(false);
-                    return existing;
-                })
-                .orElse(
-                    PasswordResetToken.builder()
+        PasswordResetToken resetToken = PasswordResetToken.builder()
                         .token(UUID.randomUUID().toString())
                         .expiryDate(Instant.now().plus(30, ChronoUnit.MINUTES))
                         .user(user)
-                        .build()
-                );
+                        .used(false)
+                        .build();
 
         tokenRepository.save(resetToken);
 

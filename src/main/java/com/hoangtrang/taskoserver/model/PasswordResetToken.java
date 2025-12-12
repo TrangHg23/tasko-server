@@ -25,7 +25,7 @@ public class PasswordResetToken {
 
     boolean used = false;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", unique = true, nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     User user;
 }
