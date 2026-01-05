@@ -27,8 +27,8 @@ public class Task {
     private String title;
     private String description;
 
-    @Column(name="due_at_utc")
-    private OffsetDateTime dueAtUtc;
+    @Column(name="due_at")
+    private OffsetDateTime dueAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name="due_type")
@@ -73,20 +73,20 @@ public class Task {
 
     public boolean isTodayTask() {
         if (!hasDueDate()) return false;
-        LocalDate taskDate = dueAtUtc.toLocalDate();
+        LocalDate taskDate = dueAt.toLocalDate();
         return taskDate.equals(LocalDate.now());
     }
 
     public boolean isOverdue() {
         if (isCompleted || !hasDueDate()) return false;
-        return dueAtUtc.isBefore(OffsetDateTime.now());
+        return dueAt.isBefore(OffsetDateTime.now());
     }
 
     public LocalDate getDueDate() {
-        return hasDueDate() ? dueAtUtc.toLocalDate() : null;
+        return hasDueDate() ? dueAt.toLocalDate() : null;
     }
 
     public OffsetDateTime getDueDateTime() {
-        return (dueType == DueType.DATE_TIME) ? dueAtUtc : null;
+        return (dueType == DueType.DATE_TIME) ? dueAt : null;
     }
 }

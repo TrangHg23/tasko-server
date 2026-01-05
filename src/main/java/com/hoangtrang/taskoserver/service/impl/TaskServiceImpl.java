@@ -94,9 +94,9 @@ public class TaskServiceImpl implements TaskService {
         if(Boolean.TRUE.equals(inbox)) {
             tasks = taskRepository.findInboxTasks(userId);
         } else if(dueDate != null) {
-            OffsetDateTime startUtc = TaskDueTimeHelper.startOfDayUtc(dueDate);
-            OffsetDateTime endUtc = TaskDueTimeHelper.endOfDayUtc(dueDate);
-            tasks = taskRepository.findTasksByDueDate(userId, startUtc, endUtc);
+            OffsetDateTime start = TaskDueTimeHelper.startOfDay(dueDate);
+            OffsetDateTime end = TaskDueTimeHelper.endOfDay(dueDate);
+            tasks = taskRepository.findTasksByDueDate(userId, start, end);
         } else if ("overdue".equalsIgnoreCase(status)) {
             tasks = taskRepository.findOverdueTasks(userId, nowUtc);
         } else if ("upcoming".equalsIgnoreCase(status)) {

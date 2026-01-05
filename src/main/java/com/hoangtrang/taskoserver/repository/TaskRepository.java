@@ -24,8 +24,8 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     // Tasks by date
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.isCompleted = false " +
             "AND t.dueType != 'NONE' " +
-            "AND t.dueAtUtc >= :startOfDay AND t.dueAtUtc <= :endOfDay " +
-            "ORDER BY t.dueAtUtc")
+            "AND t.dueAt >= :startOfDay AND t.dueAt <= :endOfDay " +
+            "ORDER BY t.dueAt")
     List<Task> findTasksByDueDate(
             @Param("userId") UUID userId,
             @Param("startOfDay") OffsetDateTime startOfDay,
@@ -34,28 +34,28 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     // Tasks by date list
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.isCompleted = false " +
             "AND t.dueType != 'NONE' " +
-            "AND CAST(t.dueAtUtc AS date) IN :dates " +
-            "ORDER BY t.dueAtUtc")
+            "AND CAST(t.dueAt AS date) IN :dates " +
+            "ORDER BY t.dueAt")
     List<Task> findTasksByDueDateList(@Param("userId") UUID userId, @Param("dates") List<LocalDate> dates);
 
     // Overdue
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.isCompleted = false " +
             "AND t.dueType != 'NONE' " +
-            "AND t.dueAtUtc < :now " +
-            "ORDER BY t.dueAtUtc")
+            "AND t.dueAt < :now " +
+            "ORDER BY t.dueAt")
     List<Task> findOverdueTasks(@Param("userId") UUID userId, @Param("now") OffsetDateTime now);
 
     // Upcoming
     @Query("SELECT t FROM Task t WHERE t.userId = :userId AND t.isCompleted = false " +
             "AND t.dueType != 'NONE' " +
-            "AND t.dueAtUtc > :now " +
-            "ORDER BY t.dueAtUtc")
+            "AND t.dueAt > :now " +
+            "ORDER BY t.dueAt")
     List<Task> findUpComingTasks(@Param("userId") UUID userId, @Param("now") OffsetDateTime now);
 
     // By category
     @Query("SELECT t FROM Task t WHERE t.userId = :userId " +
             "AND t.categoryId = :categoryId AND t.isCompleted = false " +
-            "ORDER BY t.dueAtUtc NULLS LAST, t.createdAt")
+            "ORDER BY t.dueAt NULLS LAST, t.createdAt")
     List<Task> findTasksByCategory(@Param("userId") UUID userId, @Param("categoryId") UUID categoryId);
 
     // Completed
@@ -70,17 +70,17 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     @Query("SELECT COUNT(t) FROM Task t WHERE t.userId = :userId AND t.isCompleted = false " +
             "AND t.dueType != 'NONE' " +
-            "AND CAST(t.dueAtUtc AS date) = :today")
+            "AND CAST(t.dueAt AS date) = :today")
     long countTodayTasks(@Param("userId") UUID userId, @Param("today") LocalDate today);
 
     @Query("SELECT COUNT(t) FROM Task t WHERE t.userId = :userId AND t.isCompleted = false " +
             "AND t.dueType != 'NONE' " +
-            "AND t.dueAtUtc < :now")
+            "AND t.dueAt < :now")
     long countOverdueTasks(@Param("userId") UUID userId, @Param("now") OffsetDateTime now);
 
     @Query("SELECT COUNT(t) FROM Task t WHERE t.userId = :userId AND t.isCompleted = false " +
             "AND t.dueType != 'NONE' " +
-            "AND t.dueAtUtc > :now")
+            "AND t.dueAt > :now")
     long countUpComingTasks(@Param("userId") UUID userId, @Param("now") OffsetDateTime now);
 
     Optional<Task> findByIdAndUserId(UUID id, UUID userId);

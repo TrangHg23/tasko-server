@@ -14,7 +14,7 @@ public class TaskDueTimeHelper {
 
     public static void setNoDueDate(Task task) {
         task.setDueType(DueType.NONE);
-        task.setDueAtUtc(null);
+        task.setDueAt(null);
     }
 
     public static void setDueDate(Task task, LocalDate date) {
@@ -24,22 +24,20 @@ public class TaskDueTimeHelper {
 
         task.setDueType(DueType.DATE);
 
-        OffsetDateTime endOfDayUtc = date
+        OffsetDateTime endOfDay = date
                 .atTime(23, 59, 59)
                 .atZone(AppTime.APP_ZONE)     // VN time
-                .withZoneSameInstant(ZoneOffset.UTC)
                 .toOffsetDateTime();
 
-        task.setDueAtUtc(endOfDayUtc);
+        task.setDueAt(endOfDay);
     }
 
     public static void setDueDateTime(Task task, OffsetDateTime dateTime) {
-        System.out.println("dateTime = " + dateTime);
         if (dateTime == null) {
             throw new AppException(ErrorStatus.INVALID_DUE_DATE_TIME);
         }
         task.setDueType(DueType.DATE_TIME);
-        task.setDueAtUtc(dateTime.withOffsetSameInstant(ZoneOffset.UTC));
+        task.setDueAt(dateTime);
     }
 
 
@@ -58,32 +56,27 @@ public class TaskDueTimeHelper {
         if (task.getDueType() == null || task.getDueType() == DueType.NONE) {
             return null;
         }
-        if (task.getDueAtUtc() == null) {
+        if (task.getDueAt() == null) {
             return null;
         }
 
-        return task.getDueAtUtc()
-                .atZoneSameInstant(AppTime.APP_ZONE)
-                .toLocalDate();
+        return task.getDueAt().toLocalDate();
     }
 
 
     public static OffsetDateTime extractDueDateTime(Task task) {
-        if (task.getDueType() == DueType.DATE_TIME && task.getDueAtUtc() != null) {
-            return task.getDueAtUtc();
+        if (task.getDueType() == DueType.DATE_TIME && task.getDueAt() != null) {
+            return task.getDueAt();
         }
         return null;
     }
 
-    public static OffsetDateTime startOfDayUtc(LocalDate date) {
-        return date.atStartOfDay(AppTime.APP_ZONE)          // start of day in user’s timezone
-                .withZoneSameInstant(ZoneOffset.UTC) // convert to UTC
-                .toOffsetDateTime();
+    public static OffsetDateTime startOfDay(LocalDate date) {
+        return date.atStartOfDay(AppTime.APP_ZONE).toOffsetDateTime();          // start of day in user’s timezone
     }
 
-    public static OffsetDateTime endOfDayUtc(LocalDate date) {
+    public static OffsetDateTime endOfDay(LocalDate date) {
         return date.plusDays(1).atStartOfDay(AppTime.APP_ZONE)  // start of next day
-                .withZoneSameInstant(ZoneOffset.UTC) // convert to UTC
                 .toOffsetDateTime();
     }
 
