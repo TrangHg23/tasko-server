@@ -23,6 +23,9 @@ public enum ErrorStatus {
     TOKEN_NOT_FOUND(1013, "Reset token doesn't exist", HttpStatus.NOT_FOUND),
     TOKEN_EXPIRED(1014, "Reset token expired", HttpStatus.BAD_REQUEST),
     TOKEN_ALREADY_USED(1015, "Reset token already used", HttpStatus.BAD_REQUEST),
+    INVALID_DUE_DATE(1016, "DueDate must not be null when dueType is DATE", HttpStatus.BAD_REQUEST),
+    INVALID_DUE_DATE_TIME(1017, "DueDateTime must not be null when dueType is DATETIME", HttpStatus.BAD_REQUEST),
+
 
     UNAUTHORIZED(1101, "You do not have permission", HttpStatus.FORBIDDEN),
     UNAUTHENTICATED(1100, "Unauthenticated", HttpStatus.UNAUTHORIZED),

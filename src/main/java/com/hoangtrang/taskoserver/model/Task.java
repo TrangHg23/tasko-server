@@ -1,5 +1,6 @@
 package com.hoangtrang.taskoserver.model;
 
+import com.hoangtrang.taskoserver.model.enums.DueType;
 import com.hoangtrang.taskoserver.model.enums.PriorityLevel;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -26,8 +27,12 @@ public class Task {
     private String title;
     private String description;
 
-    @Column(name="due_date")
-    private LocalDate dueDate;
+    @Column(name="due_at_utc")
+    private OffsetDateTime dueAtUtc;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="due_type")
+    private DueType dueType;
 
     @Enumerated(EnumType.STRING)
     private PriorityLevel priority;
@@ -50,7 +55,8 @@ public class Task {
         updatedAt = OffsetDateTime.now();
         if (isCompleted == null) {
             isCompleted = false;
-        }}
+        }
+    }
 
     @PreUpdate
     protected void onUpdate() {
@@ -61,12 +67,26 @@ public class Task {
         return this.categoryId == null;
     }
 
+    public boolean hasDueDate() {
+        return dueType != null && dueType != DueType.NONE;
+    }
+
     public boolean isTodayTask() {
-        return this.dueDate != null && this.dueDate.equals(LocalDate.now());
+        if (!hasDueDate()) return false;
+        LocalDate taskDate = dueAtUtc.toLocalDate();
+        return taskDate.equals(LocalDate.now());
     }
 
     public boolean isOverdue() {
-        return this.dueDate != null && this.dueDate.isBefore(LocalDate.now()) && !this.isCompleted;
+        if (isCompleted || !hasDueDate()) return false;
+        return dueAtUtc.isBefore(OffsetDateTime.now());
     }
 
+    public LocalDate getDueDate() {
+        return hasDueDate() ? dueAtUtc.toLocalDate() : null;
+    }
+
+    public OffsetDateTime getDueDateTime() {
+        return (dueType == DueType.DATE_TIME) ? dueAtUtc : null;
+    }
 }
