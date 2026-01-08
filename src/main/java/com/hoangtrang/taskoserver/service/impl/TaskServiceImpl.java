@@ -133,12 +133,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public TaskResponse updateTask(UUID taskId, UUID userId, TaskRequest updateTask) {
-        // Validation với dueType
         validateDueTimeRequest(updateTask);
 
         Task task = loadTaskByUserId(taskId, userId);
         taskMapper.updateTaskFromDto(updateTask, task);
-        // dueAtUtc và dueType đã được update trong mapper's @AfterMapping
 
         Task savedTask = taskRepository.save(task);
 

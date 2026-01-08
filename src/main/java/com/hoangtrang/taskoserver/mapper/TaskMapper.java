@@ -50,7 +50,7 @@ public interface TaskMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isCompleted", ignore = true)
     @Mapping(target = "completedAt", ignore = true)
-    @Mapping(target = "dueAtUtc", ignore = true) // set in @AfterMapping
+    @Mapping(target = "dueAt", ignore = true) // set in @AfterMapping
     @Mapping(target = "dueType", source = "request.dueType", defaultExpression = "java(DueType.NONE)")
     Task toTask(TaskRequest request, UUID userId);
 
@@ -61,7 +61,8 @@ public interface TaskMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "isCompleted", ignore = true)
     @Mapping(target = "completedAt", ignore = true)
-    @Mapping(target = "dueAtUtc", ignore = true) // set in @AfterMapping
+    @Mapping(target = "dueAt", ignore = true) // set in @AfterMapping
+    @Mapping(target = "dueType", ignore = true)
     void updateTaskFromDto(TaskRequest request, @MappingTarget Task task);
 
     // after map
@@ -77,7 +78,11 @@ public interface TaskMapper {
 
     @AfterMapping
     default void setDueTimeAfterUpdate(TaskRequest request, @MappingTarget Task task) {
-        if (request.getDueType() != null) {
+        if (
+                request.getDueType() != null ||
+                        request.getDueDate() != null ||
+                        request.getDueDateTime() != null
+        ) {
             TaskDueTimeHelper.setDueTime(
                     task,
                     request.getDueType(),
