@@ -124,7 +124,7 @@ public class TaskServiceImpl implements TaskService {
             tasks = taskRepository.findAllByUserId(userId);
         }
 
-        return mapTasksToResponses(tasks, status);
+        return mapTasksToResponses(tasks);
     }
 
 
@@ -211,8 +211,7 @@ public class TaskServiceImpl implements TaskService {
             category = categoryRepository.findByIdAndUserId(updateTask.getCategoryId(), userId)
                     .orElseThrow(() -> new AppException(ErrorStatus.CATEGORY_NOT_FOUND));
             task.setCategoryId(updateTask.getCategoryId());
-        } else if (updateTask.getCategoryId() == null && updateTask.getTitle() != null) {
-            // Nếu explicitly set null (distinguish từ không gửi field)
+        } else {
             task.setCategoryId(null);
         }
 
@@ -237,7 +236,7 @@ public class TaskServiceImpl implements TaskService {
     /**
      * Map list of tasks to responses with categories
      */
-    private List<TaskResponse> mapTasksToResponses(List<Task> tasks, String status) {
+    private List<TaskResponse> mapTasksToResponses(List<Task> tasks) {
         Set<UUID> categoryIds = tasks.stream()
                 .map(Task::getCategoryId)
                 .filter(Objects::nonNull)
