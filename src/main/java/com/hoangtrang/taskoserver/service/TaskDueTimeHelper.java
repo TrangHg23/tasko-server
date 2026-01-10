@@ -23,7 +23,7 @@ public class TaskDueTimeHelper {
         }
 
         task.setDueType(DueType.DATE);
-        task.setDueAt(endOfDay(date));
+        task.setDueAt(startOfDay(date));
     }
 
     public static void setDueDateTime(Task task, OffsetDateTime dateTime) {
@@ -54,11 +54,7 @@ public class TaskDueTimeHelper {
             return null;
         }
 
-        if(task.getDueType() == DueType.DATE) {
-            return task.getDueAt().minusNanos(1).toLocalDate();
-        }
-
-        return task.getDueAt().toLocalDate();
+        return task.getDueAt().atZoneSameInstant(AppTime.APP_ZONE).toLocalDate();
     }
 
 

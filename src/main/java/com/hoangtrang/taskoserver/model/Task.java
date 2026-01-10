@@ -71,22 +71,4 @@ public class Task {
         return dueType != null && dueType != DueType.NONE;
     }
 
-    public boolean isTodayTask() {
-        if (!hasDueDate()) return false;
-        LocalDate taskDate = dueAt.toLocalDate();
-        return taskDate.equals(LocalDate.now());
-    }
-
-    public boolean isOverdue() {
-        if (isCompleted || !hasDueDate()) return false;
-        return dueAt.isBefore(OffsetDateTime.now());
-    }
-
-    public LocalDate getDueDate() {
-        return hasDueDate() ? dueAt.toLocalDate() : null;
-    }
-
-    public OffsetDateTime getDueDateTime() {
-        return (dueType == DueType.DATE_TIME) ? dueAt : null;
-    }
 }

@@ -15,6 +15,7 @@ import com.hoangtrang.taskoserver.repository.CategoryRepository;
 import com.hoangtrang.taskoserver.repository.TaskRepository;
 import com.hoangtrang.taskoserver.service.TaskDueTimeHelper;
 import com.hoangtrang.taskoserver.service.TaskService;
+import com.hoangtrang.taskoserver.util.AppTime;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +28,9 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.hoangtrang.taskoserver.service.TaskDueTimeHelper.endOfDay;
+import static com.hoangtrang.taskoserver.service.TaskDueTimeHelper.startOfDay;
 
 
 @Service
@@ -86,41 +90,54 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskResponse> filterTasks(UUID userId, String status, LocalDate dueDate,
-                                          UUID categoryId, Boolean inbox) {
+    public List<TaskResponse> filterTasks(UUID userId, String status, LocalDate dueDate, UUID categoryId, Boolean inbox) {
         List<Task> tasks;
-        OffsetDateTime nowUtc = OffsetDateTime.now(ZoneOffset.UTC);
 
-        if(Boolean.TRUE.equals(inbox)) {
+        LocalDate today = LocalDate.now(AppTime.APP_ZONE);
+        OffsetDateTime startOfToday = startOfDay(today);
+        OffsetDateTime startOfTomorrow = endOfDay(today);
+
+        if (Boolean.TRUE.equals(inbox)) {
             tasks = taskRepository.findInboxTasks(userId);
-        } else if(dueDate != null) {
-            OffsetDateTime start = TaskDueTimeHelper.startOfDay(dueDate);
-            OffsetDateTime end = TaskDueTimeHelper.endOfDay(dueDate);
-            tasks = taskRepository.findTasksByDueDate(userId, start, end);
+
         } else if ("overdue".equalsIgnoreCase(status)) {
-            tasks = taskRepository.findOverdueTasks(userId, nowUtc);
+            tasks = taskRepository.findOverdueTasks(userId, startOfToday);
+
+        } else if ("today".equalsIgnoreCase(status)) {
+            tasks = taskRepository.findTodayTasks(userId, startOfTomorrow);
+
         } else if ("upcoming".equalsIgnoreCase(status)) {
-            tasks = taskRepository.findUpComingTasks(userId, nowUtc);
+            tasks = taskRepository.findUpComingTasks(userId, startOfTomorrow);
+
+        } else if (dueDate != null) {
+            OffsetDateTime start = startOfDay(dueDate);
+            OffsetDateTime end = endOfDay(dueDate);
+            tasks = taskRepository.findTasksByDueDate(userId, start, end);
+
         } else if ("completed".equalsIgnoreCase(status)) {
             tasks = taskRepository.findCompletedTasks(userId);
+
         } else if (categoryId != null) {
             tasks = taskRepository.findTasksByCategory(userId, categoryId);
+
         } else {
             tasks = taskRepository.findAllByUserId(userId);
         }
 
-        return mapTasksToResponses(tasks);
+        return mapTasksToResponses(tasks, status);
     }
+
 
     @Override
     public CountTaskResponse countTasks(UUID userId) {
-        LocalDate today = LocalDate.now();
-        OffsetDateTime now = OffsetDateTime.now();
+        LocalDate today = LocalDate.now(AppTime.APP_ZONE);
+        OffsetDateTime startOfToday = startOfDay(today);
+        OffsetDateTime startOfTomorrow = endOfDay(today);
 
         long countInbox = taskRepository.countInboxTasks(userId);
-        long countToday = taskRepository.countTodayTasks(userId, today);
-        long countOverdue = taskRepository.countOverdueTasks(userId, now);
-        long countUpcoming = taskRepository.countUpComingTasks(userId, now);
+        long countToday = taskRepository.countTodayTasks(userId, startOfTomorrow);
+        long countOverdue = taskRepository.countOverdueTasks(userId, startOfToday);
+        long countUpcoming = taskRepository.countUpComingTasks(userId, startOfTomorrow);
 
         return CountTaskResponse.builder()
                 .inbox(countInbox)
@@ -220,7 +237,7 @@ public class TaskServiceImpl implements TaskService {
     /**
      * Map list of tasks to responses with categories
      */
-    private List<TaskResponse> mapTasksToResponses(List<Task> tasks) {
+    private List<TaskResponse> mapTasksToResponses(List<Task> tasks, String status) {
         Set<UUID> categoryIds = tasks.stream()
                 .map(Task::getCategoryId)
                 .filter(Objects::nonNull)
@@ -230,8 +247,11 @@ public class TaskServiceImpl implements TaskService {
                 .stream()
                 .collect(Collectors.toMap(Category::getId, Function.identity()));
 
+        LocalDate today = LocalDate.now(AppTime.APP_ZONE);
+
         return tasks.stream().map(task -> {
             TaskResponse res = taskMapper.toTaskResponse(task);
+            applyTaskStatus(task, res, today);
             if (task.getCategoryId() != null) {
                 Category cat = categoryMap.get(task.getCategoryId());
                 if (cat != null) {
@@ -290,4 +310,18 @@ public class TaskServiceImpl implements TaskService {
             }
         }
     }
+
+    private void applyTaskStatus(Task task, TaskResponse res, LocalDate today) {
+        LocalDate dueDate = TaskDueTimeHelper.extractDueDate(task);
+
+        if (dueDate == null || Boolean.TRUE.equals(task.getIsCompleted())) {
+            res.setOverdue(false);
+            res.setTodayTask(false);
+            return;
+        }
+
+        res.setOverdue(dueDate.isBefore(today));
+        res.setTodayTask(dueDate.equals(today));
+    }
+
 }

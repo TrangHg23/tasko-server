@@ -26,17 +26,17 @@ public interface TaskMapper {
     @Mapping(target = "createdAt", source = "task.createdAt")
     @Mapping(target = "category", source = "category")
     @Mapping(target = "inboxTask", expression = "java(task.isInboxTask())")
-    @Mapping(target = "todayTask", expression = "java(task.isTodayTask())")
-    @Mapping(target = "overdue", expression = "java(task.isOverdue())")
+    @Mapping(target = "todayTask", ignore = true)
+    @Mapping(target = "overdue", ignore = true)
     @Mapping(target = "dueType", source = "task.dueType")
     @Mapping(target = "dueDate", expression = "java(TaskDueTimeHelper.extractDueDate(task))")
     @Mapping(target = "dueDateTime", expression = "java(TaskDueTimeHelper.extractDueDateTime(task))")
     TaskResponse toTaskResponse(Task task, Category category);
 
     @Mapping(target = "inboxTask", expression = "java(task.isInboxTask())")
-    @Mapping(target = "todayTask", expression = "java(task.isTodayTask())")
-    @Mapping(target = "overdue", expression = "java(task.isOverdue())")
     @Mapping(target = "dueType", source = "task.dueType")
+    @Mapping(target = "todayTask", ignore = true)
+    @Mapping(target = "overdue", ignore = true)
     @Mapping(target = "dueDate", expression = "java(TaskDueTimeHelper.extractDueDate(task))")
     @Mapping(target = "dueDateTime", expression = "java(TaskDueTimeHelper.extractDueDateTime(task))")
     TaskResponse toTaskResponse(Task task);

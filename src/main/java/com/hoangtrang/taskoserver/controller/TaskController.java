@@ -50,7 +50,7 @@ public class TaskController {
 
     @Operation(
             summary = "Get tasks with filters",
-            description = "Retrieve tasks by applying only one filter at a time: inbox=true, categoryId, dueDate, or status (overdue, upcoming, completed)."
+            description = "Retrieve tasks by applying only one filter at a time: inbox=true, categoryId, dueDate, or status (overdue, today, upcoming, completed)."
     )
     @GetMapping
     public ResponseData<List<TaskResponse>> getFilterTasks(
