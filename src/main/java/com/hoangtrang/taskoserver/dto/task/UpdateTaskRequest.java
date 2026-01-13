@@ -1,6 +1,7 @@
 package com.hoangtrang.taskoserver.dto.task;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.hoangtrang.taskoserver.model.enums.DueType;
 import com.hoangtrang.taskoserver.model.enums.PriorityLevel;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -20,8 +21,12 @@ public class UpdateTaskRequest {
 
     String description;
 
+    DueType dueType;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate dueDate;
+
+    OffsetDateTime dueDateTime;
 
     PriorityLevel priority;
 

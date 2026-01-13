@@ -1,0 +1,77 @@
+package com.hoangtrang.taskoserver.service;
+
+import com.hoangtrang.taskoserver.exception.AppException;
+import com.hoangtrang.taskoserver.exception.ErrorStatus;
+import com.hoangtrang.taskoserver.model.Task;
+import com.hoangtrang.taskoserver.model.enums.DueType;
+import com.hoangtrang.taskoserver.util.AppTime;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+
+public class TaskDueTimeHelper {
+
+    public static void setNoDueDate(Task task) {
+        task.setDueType(DueType.NONE);
+        task.setDueAt(null);
+    }
+
+    public static void setDueDate(Task task, LocalDate date) {
+        if (date == null) {
+            throw new AppException(ErrorStatus.INVALID_DUE_DATE);
+        }
+
+        task.setDueType(DueType.DATE);
+        task.setDueAt(startOfDay(date));
+    }
+
+    public static void setDueDateTime(Task task, OffsetDateTime dateTime) {
+        if (dateTime == null) {
+            throw new AppException(ErrorStatus.INVALID_DUE_DATE_TIME);
+        }
+        task.setDueType(DueType.DATE_TIME);
+        task.setDueAt(dateTime);
+    }
+
+
+    public static void setDueTime(Task task, DueType dueType, LocalDate dueDate, OffsetDateTime dueDateTime) {
+        if (dueType == null || dueType == DueType.NONE) {
+            setNoDueDate(task);
+        } else if (dueType == DueType.DATE) {
+            setDueDate(task, dueDate);
+        } else if (dueType == DueType.DATE_TIME) {
+            setDueDateTime(task, dueDateTime);
+        }
+    }
+
+
+    public static LocalDate extractDueDate(Task task) {
+        if (task.getDueType() == null || task.getDueType() == DueType.NONE) {
+            return null;
+        }
+        if (task.getDueAt() == null) {
+            return null;
+        }
+
+        return task.getDueAt().atZoneSameInstant(AppTime.APP_ZONE).toLocalDate();
+    }
+
+
+    public static OffsetDateTime extractDueDateTime(Task task) {
+        if (task.getDueType() == DueType.DATE_TIME && task.getDueAt() != null) {
+            return task.getDueAt();
+        }
+        return null;
+    }
+
+    public static OffsetDateTime startOfDay(LocalDate date) {
+        return date.atStartOfDay(AppTime.APP_ZONE).toOffsetDateTime();          // start of day in user’s timezone
+    }
+
+    public static OffsetDateTime endOfDay(LocalDate date) {
+        return date.plusDays(1).atStartOfDay(AppTime.APP_ZONE)  // start of next day
+                .toOffsetDateTime();
+    }
+
+}

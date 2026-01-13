@@ -1,6 +1,7 @@
 package com.hoangtrang.taskoserver.dto.task;
 
 import com.hoangtrang.taskoserver.dto.category.CategoryResponse;
+import com.hoangtrang.taskoserver.model.enums.DueType;
 import com.hoangtrang.taskoserver.model.enums.PriorityLevel;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -18,7 +19,9 @@ public class TaskResponse {
     UUID id;
     String title;
     String description;
+    DueType dueType;
     LocalDate dueDate;
+    OffsetDateTime dueDateTime;
     PriorityLevel priority;
     Boolean isCompleted;
     OffsetDateTime completedAt;
